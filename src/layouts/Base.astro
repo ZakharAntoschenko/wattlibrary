@@ -19,7 +19,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
   <meta property="og:url" content={canonical} />
   <meta name="twitter:card" content="summary" />
   {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
-  <style>
+  <style is:global>
     :root {
       --ink: #16202e; --ink-2: #334155; --muted: #64748b; --line: #e2e8f0;
       --accent: #0e8a63; --accent-deep: #0a6b4d; --accent-soft: #e7f6f0; --accent-line: #bfe8da;
