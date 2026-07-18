@@ -1,36 +1,117 @@
 {
-  "note": "Пари для /compare/. Порядок [a, b] фіксує канонічний URL a-vs-b. Поле verdict (опційне) перекриває авто-вердикт власним текстом.",
+  "note": "Pairs for /compare/. Order [a, b] fixes the canonical URL a-vs-b. Optional 'verdict' field overrides the auto-generated verdict with hand-written text.",
   "pairs": [
-    { "a": "ecoflow-river-3", "b": "bluetti-eb3a" },
-    { "a": "ecoflow-river-3", "b": "anker-solix-c300" },
-    { "a": "bluetti-eb3a", "b": "anker-solix-c300" },
-    { "a": "ecoflow-river-2", "b": "ecoflow-river-3" },
-    { "a": "ecoflow-river-2", "b": "bluetti-eb3a" },
-
-    { "a": "ecoflow-delta-3-plus", "b": "anker-solix-c1000" },
-    { "a": "ecoflow-delta-3-plus", "b": "jackery-explorer-1000-v2" },
-    { "a": "anker-solix-c1000", "b": "jackery-explorer-1000-v2" },
-    { "a": "anker-solix-c1000", "b": "bluetti-ac180" },
-    { "a": "ecoflow-delta-3-plus", "b": "bluetti-ac180" },
-    { "a": "ecoflow-delta-2", "b": "anker-solix-c1000" },
-    { "a": "ecoflow-delta-2", "b": "ecoflow-delta-3-plus" },
-    { "a": "ecoflow-delta-2", "b": "bluetti-ac180" },
-    { "a": "jackery-explorer-1000-v2", "b": "bluetti-ac180" },
-    { "a": "bluetti-ac70", "b": "ecoflow-river-2-pro" },
-    { "a": "bluetti-ac70", "b": "bluetti-eb70s" },
-    { "a": "dji-power-1000", "b": "ecoflow-delta-3-plus" },
-    { "a": "dji-power-1000", "b": "anker-solix-c1000" },
-
-    { "a": "ecoflow-delta-2-max", "b": "bluetti-elite-200-v2" },
-    { "a": "ecoflow-delta-2-max", "b": "bluetti-ac200l" },
-    { "a": "bluetti-elite-200-v2", "b": "bluetti-ac200l" },
-    { "a": "jackery-explorer-2000-plus", "b": "ecoflow-delta-2-max" },
-    { "a": "jackery-explorer-2000-plus", "b": "anker-solix-f2000" },
-    { "a": "jackery-explorer-2000-plus", "b": "bluetti-ac200l" },
-    { "a": "bluetti-elite-200-v2", "b": "anker-solix-f2000" },
-
-    { "a": "ecoflow-delta-pro-3", "b": "anker-solix-f3800" },
-    { "a": "ecoflow-delta-pro", "b": "ecoflow-delta-pro-3" },
-    { "a": "jackery-explorer-3000-pro", "b": "ecoflow-delta-pro" }
+    {
+      "a": "ecoflow-river-3",
+      "b": "bluetti-eb3a"
+    },
+    {
+      "a": "ecoflow-river-3",
+      "b": "anker-solix-c300"
+    },
+    {
+      "a": "bluetti-eb3a",
+      "b": "anker-solix-c300"
+    },
+    {
+      "a": "ecoflow-river-2",
+      "b": "ecoflow-river-3"
+    },
+    {
+      "a": "ecoflow-river-2",
+      "b": "bluetti-eb3a"
+    },
+    {
+      "a": "ecoflow-delta-3-plus",
+      "b": "anker-solix-c1000"
+    },
+    {
+      "a": "ecoflow-delta-3-plus",
+      "b": "jackery-explorer-1000-v2"
+    },
+    {
+      "a": "anker-solix-c1000",
+      "b": "jackery-explorer-1000-v2"
+    },
+    {
+      "a": "anker-solix-c1000",
+      "b": "bluetti-ac180"
+    },
+    {
+      "a": "ecoflow-delta-3-plus",
+      "b": "bluetti-ac180"
+    },
+    {
+      "a": "ecoflow-delta-2",
+      "b": "anker-solix-c1000"
+    },
+    {
+      "a": "ecoflow-delta-2",
+      "b": "ecoflow-delta-3-plus"
+    },
+    {
+      "a": "ecoflow-delta-2",
+      "b": "bluetti-ac180"
+    },
+    {
+      "a": "jackery-explorer-1000-v2",
+      "b": "bluetti-ac180"
+    },
+    {
+      "a": "bluetti-ac70",
+      "b": "ecoflow-river-2-pro"
+    },
+    {
+      "a": "bluetti-ac70",
+      "b": "bluetti-eb70s"
+    },
+    {
+      "a": "dji-power-1000",
+      "b": "ecoflow-delta-3-plus"
+    },
+    {
+      "a": "dji-power-1000",
+      "b": "anker-solix-c1000"
+    },
+    {
+      "a": "ecoflow-delta-2-max",
+      "b": "bluetti-elite-200-v2"
+    },
+    {
+      "a": "ecoflow-delta-2-max",
+      "b": "bluetti-ac200l"
+    },
+    {
+      "a": "bluetti-elite-200-v2",
+      "b": "bluetti-ac200l"
+    },
+    {
+      "a": "jackery-explorer-2000-plus",
+      "b": "ecoflow-delta-2-max"
+    },
+    {
+      "a": "jackery-explorer-2000-plus",
+      "b": "anker-solix-f2000"
+    },
+    {
+      "a": "jackery-explorer-2000-plus",
+      "b": "bluetti-ac200l"
+    },
+    {
+      "a": "bluetti-elite-200-v2",
+      "b": "anker-solix-f2000"
+    },
+    {
+      "a": "ecoflow-delta-pro-3",
+      "b": "anker-solix-f3800"
+    },
+    {
+      "a": "ecoflow-delta-pro",
+      "b": "ecoflow-delta-pro-3"
+    },
+    {
+      "a": "jackery-explorer-3000-pro",
+      "b": "ecoflow-delta-pro"
+    }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.1",
   "updated": "2026-07-18",
-  "note": "Верифіковано 2026-07-18 проти сторінок виробників і ритейлерів (web search). verified:false = лишились розбіжності, див. notes.",
+  "note": "Verified 2026-07-18 against manufacturer and retailer pages (web search). verified:false = unresolved discrepancies, see editor_notes.",
   "power_stations": [
     {
       "slug": "ecoflow-river-2",
@@ -28,7 +28,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://us.ecoflow.com/products/river-2-portable-power-station",
       "verified": true,
-      "editor_notes": "Повна зарядка від розетки за 60 хв",
+      "editor_notes": "Full AC recharge in 60 min",
       "highlight": "Full AC recharge in 60 minutes"
     },
     {
@@ -56,7 +56,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://us.ecoflow.com/products/river-2-max-portable-power-station",
       "verified": false,
-      "editor_notes": "РОЗБІЖНІСТЬ у джерелах: solar input 160W чи 220W — звірити з мануалом US-версії перед публікацією",
+      "editor_notes": "DISCREPANCY: sources list solar input as 160W or 220W — check US manual before publishing",
       "highlight": null
     },
     {
@@ -84,7 +84,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://us.ecoflow.com/products/river-2-pro-portable-power-station",
       "verified": true,
-      "editor_notes": "Повна зарядка від розетки за 70 хв",
+      "editor_notes": "Full AC recharge in 70 min",
       "highlight": "Full AC recharge in 70 minutes"
     },
     {
@@ -112,7 +112,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://us.ecoflow.com/products/river-3-portable-power-station",
       "verified": true,
-      "editor_notes": "UPS <20ms, шум <30dB — тихий лідер класу до $250",
+      "editor_notes": "UPS <20ms, noise <30dB — quiet leader of the sub-$250 class",
       "highlight": "Sub-20ms UPS and under 30dB noise — the quiet pick of the sub-$250 class"
     },
     {
@@ -168,7 +168,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://us.ecoflow.com/products/delta-2-max-portable-power-station",
       "verified": true,
-      "editor_notes": "0-80% за 43 хв при комбінованій зарядці AC+соляра",
+      "editor_notes": "0-80% in 43 min with combined AC+solar charging",
       "highlight": "0–80% in 43 minutes when combining AC + solar charging"
     },
     {
@@ -196,7 +196,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://us.ecoflow.com/products/delta-3-plus-portable-power-station",
       "verified": true,
-      "editor_notes": "10ms UPS; повна зарядка AC за 56 хв; до 1000W соляри через другий MPPT-порт",
+      "editor_notes": "10ms UPS; full AC charge in 56 min; up to 1000W solar via second MPPT port",
       "highlight": "10ms UPS switchover; full AC charge in 56 minutes; up to 1,000W solar via second MPPT port"
     },
     {
@@ -224,7 +224,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://us.ecoflow.com/products/delta-pro-portable-power-station",
       "verified": true,
-      "editor_notes": "LFP (виправлено з NMC). 240V через Double Voltage Hub з двома юнітами",
+      "editor_notes": "LFP (corrected from NMC). 240V via Double Voltage Hub with two units",
       "highlight": "240V possible via Double Voltage Hub with two units"
     },
     {
@@ -252,7 +252,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://us.ecoflow.com/products/delta-pro-3-portable-power-station",
       "verified": true,
-      "editor_notes": "120/240V dual voltage; соляра = 1600W High-PV + 1000W Low-PV порти",
+      "editor_notes": "120/240V dual voltage; solar = 1600W High-PV + 1000W Low-PV ports",
       "highlight": "Dual 120V/240V output; 1,600W high-PV + 1,000W low-PV solar ports"
     },
     {
@@ -280,7 +280,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.jackery.com/products/explorer-300-portable-power-station",
       "verified": false,
-      "editor_notes": "Застаріла NMC-модель; другорядні специфікації не звірені — перевірити перед публікацією або замінити на Explorer 300 Plus",
+      "editor_notes": "Legacy NMC model; secondary specs unverified — check before publishing, or replace with Explorer 300 Plus",
       "highlight": "Older NMC platform — modern LFP rivals outlast it several times over"
     },
     {
@@ -308,7 +308,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.jackery.com/products/jackery-explorer-1000-v2",
       "verified": true,
-      "editor_notes": "Повна зарядка AC за ~1 год (1000W вхід, 1200W в emergency mode)",
+      "editor_notes": "Full AC recharge in ~1 hr (1000W input, 1200W in emergency mode)",
       "highlight": "Full AC recharge in about an hour (1,200W emergency charge mode)"
     },
     {
@@ -336,7 +336,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.jackery.com/products/explorer-2000-plus-portable-power-station",
       "verified": true,
-      "editor_notes": "12kWh з 5 доп. батареями; до 24kWh з двома юнітами + parallel box (240V)",
+      "editor_notes": "12kWh with 5 extra batteries; up to 24kWh with two units + parallel box (240V)",
       "highlight": "Expands to 12kWh with 5 extra batteries — 24kWh and 240V with two units"
     },
     {
@@ -364,7 +364,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.jackery.com/products/explorer-3000-pro-portable-power-station",
       "verified": true,
-      "editor_notes": "Соляра 1400W через два входи по 700W (виправлено з 1200W). NMC при такій ціні — ключовий пойнт у порівняннях",
+      "editor_notes": "Solar 1400W via two 700W inputs (corrected from 1200W). NMC at this price is a key talking point in comparisons",
       "highlight": "Uses NMC chemistry at this price — a key consideration vs LFP rivals"
     },
     {
@@ -383,7 +383,7 @@
       "output_240v": false,
       "solar_input_w": 200,
       "solar_voltage_range": "12-28V",
-      "dc_input_connector": "DC7909 (MC4-кабель у комплекті)",
+      "dc_input_connector": "DC7909 (MC4 cable included)",
       "ac_charge_minutes_0_80": 30,
       "ups_switchover_ms": 20,
       "expandable_max_wh": null,
@@ -392,7 +392,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.bluettipower.com/products/bluetti-eb3a-portable-power-station",
       "verified": true,
-      "editor_notes": "600W із 268Wh — аномально потужний для класу; 0-80% за 30 хв",
+      "editor_notes": "600W from a 268Wh unit — unusually powerful for the class; 0-80% in 30 min",
       "highlight": "600W output from a 268Wh unit — unusually powerful for its class; 0–80% in 30 min"
     },
     {
@@ -411,7 +411,7 @@
       "output_240v": false,
       "solar_input_w": 200,
       "solar_voltage_range": "12-28V",
-      "dc_input_connector": "DC7909 (MC4-кабель у комплекті)",
+      "dc_input_connector": "DC7909 (MC4 cable included)",
       "ac_charge_minutes_0_80": 180,
       "ups_switchover_ms": null,
       "expandable_max_wh": null,
@@ -420,7 +420,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.bluettipower.com/products/eb70s-716wh-800w-portable-power-station-best-solar-generator-for-camping",
       "verified": true,
-      "editor_notes": "Знятий з виробництва в частині регіонів — стежити за доступністю",
+      "editor_notes": "Discontinued in some regions — monitor availability",
       "highlight": "Discontinued in some regions — stock may be limited"
     },
     {
@@ -439,7 +439,7 @@
       "output_240v": false,
       "solar_input_w": 500,
       "solar_voltage_range": "12-58V",
-      "dc_input_connector": "DC7909 (MC4-кабель у комплекті)",
+      "dc_input_connector": "DC7909 (MC4 cable included)",
       "ac_charge_minutes_0_80": 45,
       "ups_switchover_ms": 20,
       "expandable_max_wh": null,
@@ -467,7 +467,7 @@
       "output_240v": false,
       "solar_input_w": 500,
       "solar_voltage_range": "12-60V",
-      "dc_input_connector": "DC7909 (MC4-кабель у комплекті)",
+      "dc_input_connector": "DC7909 (MC4 cable included)",
       "ac_charge_minutes_0_80": 45,
       "ups_switchover_ms": 20,
       "expandable_max_wh": null,
@@ -476,7 +476,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.bluettipower.com/products/bluetti-ac180",
       "verified": true,
-      "editor_notes": "Бестселер бренду",
+      "editor_notes": "Brand best-seller",
       "highlight": "The brand's best-seller"
     },
     {
@@ -504,7 +504,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.bluettipower.com/products/ac200l",
       "verified": true,
-      "editor_notes": "30A RV-вихід",
+      "editor_notes": "30A RV output",
       "highlight": "30A RV output"
     },
     {
@@ -532,7 +532,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.bluettipower.com/products/elite-200-v2-portable-power-station",
       "verified": true,
-      "editor_notes": "6000 циклів — рекорд сегмента (~15 років щоденного циклу). Power Lifting 3900W. Часто у продажу за ~$899",
+      "editor_notes": "6000 cycles — segment record (~15 years of daily cycling). Power Lifting 3900W. Often on sale around $899",
       "highlight": "6,000-cycle battery — the segment record (~15 years of daily cycling); often on sale around $899"
     },
     {
@@ -560,7 +560,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.ankersolix.com/products/c300",
       "verified": true,
-      "editor_notes": "Два USB-C по 140W — найшвидша USB-зарядка малого класу. Solar 100W звірити в мануалі",
+      "editor_notes": "Dual 140W USB-C — fastest USB charging in the small class. Verify 100W solar figure in the manual",
       "highlight": "Dual 140W USB-C ports — fastest USB charging in the small class"
     },
     {
@@ -588,7 +588,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.ankersolix.com/products/c1000",
       "verified": true,
-      "editor_notes": "Повна зарядка AC за 58 хв. Часті глибокі знижки — реальна ціна ~$500-650",
+      "editor_notes": "Full AC charge in 58 min. Frequent deep discounts — street price ~$500-650",
       "highlight": "Full AC charge in 58 minutes; frequently discounted to $500–650"
     },
     {
@@ -616,7 +616,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.ankersolix.com/products/f2000",
       "verified": false,
-      "editor_notes": "Не звірено в цій сесії — перевірити на ankersolix.com перед публікацією",
+      "editor_notes": "Not verified this session — check ankersolix.com before publishing",
       "highlight": null
     },
     {
@@ -644,7 +644,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.ankersolix.com/products/f3800",
       "verified": true,
-      "editor_notes": "120/240V, NEMA 14-50 (EV-зарядка), розширення до 26.9kWh, інтеграція з домашньою сонячною системою",
+      "editor_notes": "120/240V, NEMA 14-50 (EV charging), expandable to 26.9kWh, home solar integration",
       "highlight": "120/240V output, NEMA 14-50 outlet for EV charging, expandable to 26.9kWh"
     },
     {
@@ -672,7 +672,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://goalzero.com/products/goal-zero-yeti-500x-portable-power-station",
       "verified": false,
-      "editor_notes": "РОЗБІЖНІСТЬ: ємність 505 чи 497Wh у різних джерелах; solar 150W (виправлено зі 120). Розглянути заміну на новіший Yeti 500 (LFP)",
+      "editor_notes": "DISCREPANCY: capacity listed as 505 or 497Wh across sources; solar 150W (corrected from 120). Consider replacing with the newer Yeti 500 (LFP)",
       "highlight": "Legacy NMC platform"
     },
     {
@@ -700,7 +700,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://goalzero.com/products/goal-zero-yeti-1500x-portable-power-station",
       "verified": false,
-      "editor_notes": "Другорядні специфікації не звірені повністю — перевірити на goalzero.com",
+      "editor_notes": "Secondary specs not fully verified — check goalzero.com",
       "highlight": null
     },
     {
@@ -728,7 +728,7 @@
       "amazon_asin": null,
       "brand_product_url": "https://www.dji.com/power-1000/specs",
       "verified": true,
-      "editor_notes": "23dB — найтихіший у класі; 2600W на 30 с, пік 4400W; швидка зарядка дронів DJI через SDC",
+      "editor_notes": "23dB — quietest in class; 2600W for 30s, 4400W peak; fast-charges DJI drones via SDC",
       "highlight": "23dB — quietest in class; fast-charges DJI drones via its SDC port"
     }
   ]
