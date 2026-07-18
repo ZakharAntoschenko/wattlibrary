@@ -4,6 +4,7 @@ import db from '../data/power_stations.json';
 import { fullName, dollarsPerWh } from '../lib/utils.js';
 
 const stations = db.power_stations;
+const brands = new Set(stations.map((s) => s.brand)).size;
 const bestValue = [...stations].sort((a, b) => dollarsPerWh(a) - dollarsPerWh(b)).slice(0, 4);
 const newest = [...stations].sort((a, b) => b.release_year - a.release_year).slice(0, 4);
 
@@ -11,21 +12,32 @@ const title = 'WattLibrary — Portable Power Station Specs, Runtimes & Compatib
 const description = `Independent database of ${stations.length}+ portable power stations. Real specifications, runtime tables for common appliances, and solar panel compatibility — no fluff, just data.`;
 ---
 <Base {title} {description}>
-  <h1>The portable power station database</h1>
-  <p style="max-width:640px;">
-    Every spec that matters — capacity, real output, battery chemistry, solar voltage windows — for {stations.length}+ power stations,
-    compiled from manufacturer documentation and organized so you can actually compare.
-  </p>
-  <p><a href="/power-stations/" class="pill" style="font-size:1rem; padding:0.5rem 1.2rem;">Browse all {stations.length} models →</a></p>
+  <section class="hero" slot="hero">
+    <div class="wrap">
+      <p class="eyebrow">The portable power station database</p>
+      <h1>Every spec that matters. One consistent database.</h1>
+      <p class="lead">
+        Capacity, real output, battery chemistry, solar voltage windows — for {stations.length}+ power stations from {brands} brands,
+        compiled from manufacturer documentation and organized so you can actually compare.
+      </p>
+      <div class="btn-row">
+        <a href="/power-stations/" class="btn">Browse all {stations.length} models</a>
+        <a href="/compare/" class="btn btn-ghost">Head-to-head comparisons</a>
+      </div>
+      <div class="kpis" style="max-width:560px;">
+        <div class="kpi"><b>{stations.length}</b> models tracked</div>
+        <div class="kpi"><b>{brands}</b> brands</div>
+        <div class="kpi"><b>26</b> specs per model</div>
+      </div>
+    </div>
+  </section>
 
-  <h2>Best value per watt-hour (launch price)</h2>
+  <h2 style="margin-top:.5rem;">Best value per watt-hour <span class="muted" style="font-weight:400; font-size:.85rem;">(launch price)</span></h2>
   <div class="grid">
     {bestValue.map((s) => (
       <div class="card">
         <a href={`/power-stations/${s.slug}/`}>{fullName(s)}</a>
-        <p class="muted" style="margin:0.3rem 0 0; font-size:0.88rem;">
-          {s.capacity_wh.toLocaleString()}Wh · {s.chemistry} · <b>${dollarsPerWh(s).toFixed(2)}/Wh</b>
-        </p>
+        <p class="sub">{s.capacity_wh.toLocaleString()}Wh · {s.chemistry} · <b style="color:var(--accent-deep);">${dollarsPerWh(s).toFixed(2)}/Wh</b></p>
       </div>
     ))}
   </div>
@@ -35,9 +47,7 @@ const description = `Independent database of ${stations.length}+ portable power 
     {newest.map((s) => (
       <div class="card">
         <a href={`/power-stations/${s.slug}/`}>{fullName(s)}</a>
-        <p class="muted" style="margin:0.3rem 0 0; font-size:0.88rem;">
-          {s.release_year} · {s.capacity_wh.toLocaleString()}Wh · {s.ac_output_w.toLocaleString()}W
-        </p>
+        <p class="sub">{s.release_year} · {s.capacity_wh.toLocaleString()}Wh · {s.ac_output_w.toLocaleString()}W</p>
       </div>
     ))}
   </div>

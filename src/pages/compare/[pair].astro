@@ -51,7 +51,7 @@ const schema = {
 
   <h2>Side-by-side specifications</h2>
   <p class="muted" style="font-size:0.85rem;">✓ marks the better number in each row ({an}: {aWins} wins · {bn}: {bWins} wins — but weigh the rows that matter for <em>your</em> use, not the count).</p>
-  <table>
+  <div class="tbl"><div class="tbl-scroll"><table>
     <thead>
       <tr>
         <th></th>
@@ -63,12 +63,12 @@ const schema = {
       {rows.map(([label, av, bv, w]) => (
         <tr>
           <th>{label}</th>
-          <td style={w === 1 ? 'background:var(--accent-soft); font-weight:600;' : ''}>{av}{w === 1 ? ' ✓' : ''}</td>
-          <td style={w === -1 ? 'background:var(--accent-soft); font-weight:600;' : ''}>{bv}{w === -1 ? ' ✓' : ''}</td>
+          <td class={w === 1 ? 'win' : ''}>{av}{w === 1 ? ' ✓' : ''}</td>
+          <td class={w === -1 ? 'win' : ''}>{bv}{w === -1 ? ' ✓' : ''}</td>
         </tr>
       ))}
     </tbody>
-  </table>
+  </table></div></div>
 
   <h2>Dig deeper</h2>
   <div class="grid">

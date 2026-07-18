@@ -99,10 +99,10 @@ const schema = {
     <div class="kpi"><b>{whPerKg(s).toFixed(0)} Wh/kg</b> ({s.weight_kg} kg)</div>
   </div>
 
-  {s.notes && <p><span class="pill">Worth knowing</span> {s.notes}</p>}
+  {s.highlight && <div class="note"><b>Worth knowing:</b> {s.highlight}</div>}
 
   <h2>Full specifications</h2>
-  <table>
+  <div class="tbl"><div class="tbl-scroll"><table>
     <tbody>
       <tr><th>Battery capacity</th><td>{s.capacity_wh.toLocaleString()} Wh</td></tr>
       <tr><th>Battery chemistry</th><td>{s.chemistry === 'LFP' ? 'LiFePO4 (LFP)' : 'Lithium NMC'} — {s.cycles_to_80pct.toLocaleString()} cycles to 80%</td></tr>
@@ -119,11 +119,11 @@ const schema = {
       {s.expandable_max_wh && <tr><th>Expandable up to</th><td>{s.expandable_max_wh.toLocaleString()} Wh with extra batteries</td></tr>}
       <tr><th>Weight</th><td>{s.weight_kg} kg</td></tr>
     </tbody>
-  </table>
+  </table></div></div>
 
   <h2>What can it run, and for how long?</h2>
   <p class="muted">Estimates assume ~85% inverter efficiency and average running wattage. Motor-driven appliances also need surge headroom.</p>
-  <table>
+  <div class="tbl"><div class="tbl-scroll"><table>
     <thead><tr><th>Appliance</th><th>Typical draw</th><th>Estimated runtime</th></tr></thead>
     <tbody>
       {APPLIANCES.map((a) => {
@@ -137,7 +137,7 @@ const schema = {
         );
       })}
     </tbody>
-  </table>
+  </table></div></div>
   {cpapNights && <p>For CPAP users: that's roughly <b>{cpapNights} nights</b> of sleep (8h/night, humidifier off).</p>}
 
   <h2>Closest alternatives</h2>
@@ -145,9 +145,7 @@ const schema = {
     {alts.map((alt) => (
       <div class="card">
         <a href={`/power-stations/${alt.slug}/`}>{fullName(alt)}</a>
-        <p class="muted" style="margin:0.3rem 0 0; font-size:0.88rem;">
-          {alt.capacity_wh.toLocaleString()}Wh · {alt.ac_output_w.toLocaleString()}W · {alt.chemistry} · ${alt.msrp_usd.toLocaleString()} launch
-        </p>
+        <p class="sub">{alt.capacity_wh.toLocaleString()}Wh · {alt.ac_output_w.toLocaleString()}W · {alt.chemistry} · ${alt.msrp_usd.toLocaleString()} launch</p>
       </div>
     ))}
   </div>
@@ -167,10 +165,10 @@ const schema = {
 
   <h2>FAQ</h2>
   {faq.map((f) => (
-    <>
-      <h3 style="font-size:1.02rem; margin-bottom:0.2rem;">{f.q}</h3>
-      <p style="margin-top:0;">{f.a}</p>
-    </>
+    <details class="faq">
+      <summary>{f.q}</summary>
+      <div>{f.a}</div>
+    </details>
   ))}
 
   <div class="disclosure">

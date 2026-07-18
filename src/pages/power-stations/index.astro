@@ -11,17 +11,17 @@ const description = `Filterable database of ${stations.length} portable power st
   <h1>Portable power station database</h1>
   <p class="muted">{stations.length} models. Filter by what actually matters — capacity, chemistry, output — then open a model for runtime tables and solar compatibility.</p>
 
-  <p id="filters" style="display:flex; flex-wrap:wrap; gap:0.4rem;">
-    <button data-f="all" class="pill" style="border:0; cursor:pointer;">All</button>
-    <button data-f="lfp" class="pill" style="border:0; cursor:pointer;">LiFePO4 only</button>
-    <button data-f="small" class="pill" style="border:0; cursor:pointer;">Under 500Wh</button>
-    <button data-f="mid" class="pill" style="border:0; cursor:pointer;">500–1,500Wh</button>
-    <button data-f="large" class="pill" style="border:0; cursor:pointer;">1,500Wh+</button>
-    <button data-f="ups" class="pill" style="border:0; cursor:pointer;">UPS mode</button>
-    <button data-f="v240" class="pill" style="border:0; cursor:pointer;">240V</button>
-  </p>
+  <div id="filters" class="filters">
+    <button data-f="all" class="active">All</button>
+    <button data-f="lfp">LiFePO4 only</button>
+    <button data-f="small">Under 500Wh</button>
+    <button data-f="mid">500–1,500Wh</button>
+    <button data-f="large">1,500Wh+</button>
+    <button data-f="ups">UPS mode</button>
+    <button data-f="v240">240V</button>
+  </div>
 
-  <table id="db">
+  <div class="tbl"><div class="tbl-scroll"><table id="db">
     <thead>
       <tr><th>Model</th><th>Capacity</th><th>AC output</th><th>Chemistry</th><th>Solar in</th><th>Weight</th><th>$/Wh*</th></tr>
     </thead>
@@ -43,13 +43,14 @@ const description = `Filterable database of ${stations.length} portable power st
         </tr>
       ))}
     </tbody>
-  </table>
+  </table></div></div>
   <p class="muted" style="font-size:0.83rem;">* Based on launch price (MSRP). Street prices are often significantly lower.</p>
 
   <script>
     document.querySelectorAll('#filters button').forEach((btn) => {
       btn.addEventListener('click', () => {
         const f = btn.dataset.f;
+        document.querySelectorAll('#filters button').forEach((b) => b.classList.toggle('active', b === btn));
         document.querySelectorAll('#db tbody tr').forEach((tr) => {
           const wh = Number(tr.dataset.wh);
           let show = true;
