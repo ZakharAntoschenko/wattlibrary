@@ -1,0 +1,51 @@
+---
+import Base from '../layouts/Base.astro';
+import db from '../data/power_stations.json';
+import { fullName, dollarsPerWh } from '../lib/utils.js';
+
+const stations = db.power_stations;
+const bestValue = [...stations].sort((a, b) => dollarsPerWh(a) - dollarsPerWh(b)).slice(0, 4);
+const newest = [...stations].sort((a, b) => b.release_year - a.release_year).slice(0, 4);
+
+const title = 'WattLibrary — Portable Power Station Specs, Runtimes & Compatibility';
+const description = `Independent database of ${stations.length}+ portable power stations. Real specifications, runtime tables for common appliances, and solar panel compatibility — no fluff, just data.`;
+---
+<Base {title} {description}>
+  <h1>The portable power station database</h1>
+  <p style="max-width:640px;">
+    Every spec that matters — capacity, real output, battery chemistry, solar voltage windows — for {stations.length}+ power stations,
+    compiled from manufacturer documentation and organized so you can actually compare.
+  </p>
+  <p><a href="/power-stations/" class="pill" style="font-size:1rem; padding:0.5rem 1.2rem;">Browse all {stations.length} models →</a></p>
+
+  <h2>Best value per watt-hour (launch price)</h2>
+  <div class="grid">
+    {bestValue.map((s) => (
+      <div class="card">
+        <a href={`/power-stations/${s.slug}/`}>{fullName(s)}</a>
+        <p class="muted" style="margin:0.3rem 0 0; font-size:0.88rem;">
+          {s.capacity_wh.toLocaleString()}Wh · {s.chemistry} · <b>${dollarsPerWh(s).toFixed(2)}/Wh</b>
+        </p>
+      </div>
+    ))}
+  </div>
+
+  <h2>Recently released</h2>
+  <div class="grid">
+    {newest.map((s) => (
+      <div class="card">
+        <a href={`/power-stations/${s.slug}/`}>{fullName(s)}</a>
+        <p class="muted" style="margin:0.3rem 0 0; font-size:0.88rem;">
+          {s.release_year} · {s.capacity_wh.toLocaleString()}Wh · {s.ac_output_w.toLocaleString()}W
+        </p>
+      </div>
+    ))}
+  </div>
+
+  <h2>Why another power station site?</h2>
+  <p style="max-width:640px;">
+    Most "best power station" lists are opinions. WattLibrary is a database: we track the numbers that determine whether a unit
+    fits your use case — LiFePO4 vs NMC cycle life, UPS switchover times, MPPT voltage windows for solar charging — and we show
+    our math on every runtime estimate.
+  </p>
+</Base>

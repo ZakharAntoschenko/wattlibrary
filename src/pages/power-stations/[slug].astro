@@ -1,0 +1,157 @@
+---
+import Base from '../../layouts/Base.astro';
+import db from '../../data/power_stations.json';
+import {
+  APPLIANCES, runtimeHours, formatRuntime, dollarsPerWh, whPerKg,
+  fullName, alternatives, capacityClass, effectiveOutput,
+} from '../../lib/utils.js';
+
+export function getStaticPaths() {
+  return db.power_stations.map((station) => ({
+    params: { slug: station.slug },
+    props: { station },
+  }));
+}
+
+const { station: s } = Astro.props;
+const all = db.power_stations;
+const name = fullName(s);
+const alts = alternatives(s, all);
+const fridgeRt = formatRuntime(runtimeHours(s, 150));
+const cpapNights = runtimeHours(s, 40) ? (runtimeHours(s, 40) / 8).toFixed(1) : null;
+
+const title = `${name} Specs: Capacity, Output, Runtime Tables (${s.release_year})`;
+const description = `${name}: ${s.capacity_wh}Wh ${s.chemistry} battery, ${s.ac_output_w}W AC output, ${s.solar_input_w}W solar input. Full specs, runtime for 12 appliances, and closest alternatives.`;
+
+const faq = [
+  {
+    q: `How long will the ${name} run a refrigerator?`,
+    a: fridgeRt
+      ? `Around ${fridgeRt} for a full-size refrigerator averaging 150W, assuming ~85% inverter efficiency. Actual runtime depends on the fridge's compressor duty cycle and ambient temperature.`
+      : `A full-size refrigerator's compressor surge may exceed this unit's ${s.ac_output_w}W output — check the fridge's rated and surge wattage first.`,
+  },
+  {
+    q: `Does the ${name} use a LiFePO4 battery?`,
+    a: s.chemistry === 'LFP'
+      ? `Yes. It uses LiFePO4 (LFP) cells rated for about ${s.cycles_to_80pct.toLocaleString()} cycles to 80% capacity — roughly ${Math.round(s.cycles_to_80pct / 365)}+ years of daily cycling.`
+      : `No. It uses NMC lithium-ion cells rated for about ${s.cycles_to_80pct.toLocaleString()} cycles to 80% capacity, which is a shorter service life than modern LiFePO4 models.`,
+  },
+  {
+    q: `What solar panels work with the ${name}?`,
+    a: `Any panel (or array) within its ${s.solar_voltage_range} MPPT voltage window and up to ${s.solar_input_w}W, connected via ${s.dc_input_connector}. Staying inside the voltage window matters more than matching wattage.`,
+  },
+  {
+    q: `How fast does the ${name} recharge from a wall outlet?`,
+    a: s.ac_charge_minutes_0_80
+      ? `About ${s.ac_charge_minutes_0_80} minutes from 0 to 80% on AC power.`
+      : `The manufacturer does not quote a standard 0–80% AC time for this model.`,
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Product',
+      name,
+      brand: { '@type': 'Brand', name: s.brand },
+      description,
+      url: new URL(Astro.url.pathname, Astro.site).href,
+      offers: { '@type': 'Offer', price: s.msrp_usd, priceCurrency: 'USD' },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faq.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Power stations', item: new URL('/power-stations/', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name },
+      ],
+    },
+  ],
+};
+---
+<Base {title} {description} {schema}>
+  <nav class="crumbs"><a href="/power-stations/">Power stations</a> › {name}</nav>
+  <h1>{name}</h1>
+  <p class="muted">{capacityClass(s.capacity_wh)} · Released {s.release_year} · Launch price ${s.msrp_usd.toLocaleString()}</p>
+
+  <div class="kpis">
+    <div class="kpi"><b>{s.capacity_wh.toLocaleString()} Wh</b> capacity</div>
+    <div class="kpi"><b>{s.ac_output_w.toLocaleString()} W</b> AC output</div>
+    <div class="kpi"><b>{s.chemistry}</b> {s.chemistry === 'LFP' ? 'LiFePO4' : 'lithium NMC'}</div>
+    <div class="kpi"><b>${dollarsPerWh(s).toFixed(2)}</b> per Wh</div>
+    <div class="kpi"><b>{whPerKg(s).toFixed(0)} Wh/kg</b> ({s.weight_kg} kg)</div>
+  </div>
+
+  {s.notes && <p><span class="pill">Worth knowing</span> {s.notes}</p>}
+
+  <h2>Full specifications</h2>
+  <table>
+    <tbody>
+      <tr><th>Battery capacity</th><td>{s.capacity_wh.toLocaleString()} Wh</td></tr>
+      <tr><th>Battery chemistry</th><td>{s.chemistry === 'LFP' ? 'LiFePO4 (LFP)' : 'Lithium NMC'} — {s.cycles_to_80pct.toLocaleString()} cycles to 80%</td></tr>
+      <tr><th>AC output (continuous)</th><td>{s.ac_output_w.toLocaleString()} W{s.boost_mode_w ? ` (${s.boost_mode_w.toLocaleString()} W in boost mode)` : ''}</td></tr>
+      <tr><th>AC output (surge)</th><td>{s.ac_surge_w.toLocaleString()} W</td></tr>
+      <tr><th>AC outlets</th><td>{s.ac_outlets}</td></tr>
+      <tr><th>Max USB-C power</th><td>{s.usb_c_max_w} W</td></tr>
+      <tr><th>240V output</th><td>{s.output_240v ? 'Yes' : 'No'}</td></tr>
+      <tr><th>Max solar input</th><td>{s.solar_input_w.toLocaleString()} W</td></tr>
+      <tr><th>Solar voltage window (MPPT)</th><td>{s.solar_voltage_range}</td></tr>
+      <tr><th>DC input connector</th><td>{s.dc_input_connector}</td></tr>
+      {s.ac_charge_minutes_0_80 && <tr><th>AC recharge 0–80%</th><td>{s.ac_charge_minutes_0_80} min</td></tr>}
+      <tr><th>UPS / EPS switchover</th><td>{s.ups_switchover_ms ? `${s.ups_switchover_ms} ms` : 'Not supported'}</td></tr>
+      {s.expandable_max_wh && <tr><th>Expandable up to</th><td>{s.expandable_max_wh.toLocaleString()} Wh with extra batteries</td></tr>}
+      <tr><th>Weight</th><td>{s.weight_kg} kg</td></tr>
+    </tbody>
+  </table>
+
+  <h2>What can it run, and for how long?</h2>
+  <p class="muted">Estimates assume ~85% inverter efficiency and average running wattage. Motor-driven appliances also need surge headroom.</p>
+  <table>
+    <thead><tr><th>Appliance</th><th>Typical draw</th><th>Estimated runtime</th></tr></thead>
+    <tbody>
+      {APPLIANCES.map((a) => {
+        const rt = runtimeHours(s, a.watts);
+        return (
+          <tr>
+            <td>{a.name}</td>
+            <td>{a.watts} W</td>
+            <td>{rt !== null ? formatRuntime(rt) : <span class="muted">Exceeds {effectiveOutput(s).toLocaleString()}W output</span>}</td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+  {cpapNights && <p>For CPAP users: that's roughly <b>{cpapNights} nights</b> of sleep (8h/night, humidifier off).</p>}
+
+  <h2>Closest alternatives</h2>
+  <div class="grid">
+    {alts.map((alt) => (
+      <div class="card">
+        <a href={`/power-stations/${alt.slug}/`}>{fullName(alt)}</a>
+        <p class="muted" style="margin:0.3rem 0 0; font-size:0.88rem;">
+          {alt.capacity_wh.toLocaleString()}Wh · {alt.ac_output_w.toLocaleString()}W · {alt.chemistry} · ${alt.msrp_usd.toLocaleString()} launch
+        </p>
+      </div>
+    ))}
+  </div>
+
+  <h2>FAQ</h2>
+  {faq.map((f) => (
+    <>
+      <h3 style="font-size:1.02rem; margin-bottom:0.2rem;">{f.q}</h3>
+      <p style="margin-top:0;">{f.a}</p>
+    </>
+  ))}
+
+  <div class="disclosure">
+    Specifications compiled from {s.brand}'s official documentation (<a href={s.brand_product_url} rel="nofollow noopener">source</a>). Spotted an error? We correct listings within 24 hours.
+  </div>
+</Base>

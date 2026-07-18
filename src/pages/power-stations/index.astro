@@ -1,0 +1,67 @@
+---
+import Base from '../../layouts/Base.astro';
+import db from '../../data/power_stations.json';
+import { fullName, dollarsPerWh } from '../../lib/utils.js';
+
+const stations = [...db.power_stations].sort((a, b) => a.capacity_wh - b.capacity_wh);
+const title = `Compare ${stations.length} Portable Power Stations by Specs | WattLibrary`;
+const description = `Filterable database of ${stations.length} portable power stations: capacity, AC output, battery chemistry, solar input, weight and price-per-Wh. EcoFlow, Jackery, Bluetti, Anker and more.`;
+---
+<Base {title} {description}>
+  <h1>Portable power station database</h1>
+  <p class="muted">{stations.length} models. Filter by what actually matters — capacity, chemistry, output — then open a model for runtime tables and solar compatibility.</p>
+
+  <p id="filters" style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+    <button data-f="all" class="pill" style="border:0; cursor:pointer;">All</button>
+    <button data-f="lfp" class="pill" style="border:0; cursor:pointer;">LiFePO4 only</button>
+    <button data-f="small" class="pill" style="border:0; cursor:pointer;">Under 500Wh</button>
+    <button data-f="mid" class="pill" style="border:0; cursor:pointer;">500–1,500Wh</button>
+    <button data-f="large" class="pill" style="border:0; cursor:pointer;">1,500Wh+</button>
+    <button data-f="ups" class="pill" style="border:0; cursor:pointer;">UPS mode</button>
+    <button data-f="v240" class="pill" style="border:0; cursor:pointer;">240V</button>
+  </p>
+
+  <table id="db">
+    <thead>
+      <tr><th>Model</th><th>Capacity</th><th>AC output</th><th>Chemistry</th><th>Solar in</th><th>Weight</th><th>$/Wh*</th></tr>
+    </thead>
+    <tbody>
+      {stations.map((s) => (
+        <tr
+          data-chem={s.chemistry}
+          data-wh={s.capacity_wh}
+          data-ups={s.ups_switchover_ms ? '1' : '0'}
+          data-v240={s.output_240v ? '1' : '0'}
+        >
+          <td><a href={`/power-stations/${s.slug}/`}>{fullName(s)}</a></td>
+          <td>{s.capacity_wh.toLocaleString()} Wh</td>
+          <td>{s.ac_output_w.toLocaleString()} W</td>
+          <td>{s.chemistry}</td>
+          <td>{s.solar_input_w} W</td>
+          <td>{s.weight_kg} kg</td>
+          <td>${dollarsPerWh(s).toFixed(2)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  <p class="muted" style="font-size:0.83rem;">* Based on launch price (MSRP). Street prices are often significantly lower.</p>
+
+  <script>
+    document.querySelectorAll('#filters button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const f = btn.dataset.f;
+        document.querySelectorAll('#db tbody tr').forEach((tr) => {
+          const wh = Number(tr.dataset.wh);
+          let show = true;
+          if (f === 'lfp') show = tr.dataset.chem === 'LFP';
+          else if (f === 'small') show = wh < 500;
+          else if (f === 'mid') show = wh >= 500 && wh < 1500;
+          else if (f === 'large') show = wh >= 1500;
+          else if (f === 'ups') show = tr.dataset.ups === '1';
+          else if (f === 'v240') show = tr.dataset.v240 === '1';
+          tr.style.display = show ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</Base>

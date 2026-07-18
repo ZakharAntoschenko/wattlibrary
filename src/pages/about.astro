@@ -1,0 +1,29 @@
+---
+import Base from '../layouts/Base.astro';
+const title = 'About WattLibrary';
+const description = 'WattLibrary is an independent portable power station database: how we collect specs, estimate runtimes, and earn money.';
+---
+<Base {title} {description}>
+  <h1>About WattLibrary</h1>
+  <p style="max-width:640px;">
+    WattLibrary started with a simple frustration: power station spec sheets are scattered, inconsistent, and sometimes
+    misleading. We collect the numbers into one structured database and present them the same way for every model, so
+    comparisons are fair.
+  </p>
+  <h2>How we work</h2>
+  <p style="max-width:640px;">
+    Specifications come from manufacturer documentation and manuals; each listing links to its source. Runtime estimates use a
+    transparent formula (capacity × 85% inverter efficiency ÷ appliance draw) — we show the assumptions, not just the result.
+    When we're not sure about a number, we don't publish it.
+  </p>
+  <h2>How we make money</h2>
+  <p style="max-width:640px;">
+    Some links on this site are affiliate links (Amazon and brand partner programs). If you buy through them we may earn a
+    commission at no extra cost to you. Affiliate relationships never affect what data we show — the database is the same for
+    every brand, partner or not.
+  </p>
+  <h2>Corrections</h2>
+  <p style="max-width:640px;">
+    Spotted an error? Email us and we'll verify and correct it within 24 hours: hello@wattlibrary.com
+  </p>
+</Base>
