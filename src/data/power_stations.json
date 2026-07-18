@@ -1,7 +1,7 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "updated": "2026-07-18",
-  "note": "SEED DATA — усі записи verified:false. Звірити зі сторінками виробників перед публікацією.",
+  "note": "Верифіковано 2026-07-18 проти сторінок виробників і ритейлерів (web search). verified:false = лишились розбіжності, див. notes.",
   "power_stations": [
     {
       "slug": "ecoflow-river-2", "brand": "EcoFlow", "model": "RIVER 2", "release_year": 2022,
@@ -11,8 +11,8 @@
       "solar_input_w": 110, "solar_voltage_range": "11-30V", "dc_input_connector": "XT60",
       "ac_charge_minutes_0_80": 40, "ups_switchover_ms": 30, "expandable_max_wh": null,
       "weight_kg": 3.5, "msrp_usd": 239, "amazon_asin": null,
-      "brand_product_url": "https://www.ecoflow.com/us/river-2-portable-power-station",
-      "verified": false, "notes": ""
+      "brand_product_url": "https://us.ecoflow.com/products/river-2-portable-power-station",
+      "verified": true, "notes": "Повна зарядка від розетки за 60 хв"
     },
     {
       "slug": "ecoflow-river-2-max", "brand": "EcoFlow", "model": "RIVER 2 Max", "release_year": 2022,
@@ -22,8 +22,8 @@
       "solar_input_w": 220, "solar_voltage_range": "11-50V", "dc_input_connector": "XT60",
       "ac_charge_minutes_0_80": 60, "ups_switchover_ms": 30, "expandable_max_wh": null,
       "weight_kg": 6.1, "msrp_usd": 499, "amazon_asin": null,
-      "brand_product_url": "https://www.ecoflow.com/us/river-2-max-portable-power-station",
-      "verified": false, "notes": ""
+      "brand_product_url": "https://us.ecoflow.com/products/river-2-max-portable-power-station",
+      "verified": false, "notes": "РОЗБІЖНІСТЬ у джерелах: solar input 160W чи 220W — звірити з мануалом US-версії перед публікацією"
     },
     {
       "slug": "ecoflow-river-2-pro", "brand": "EcoFlow", "model": "RIVER 2 Pro", "release_year": 2022,
@@ -33,8 +33,8 @@
       "solar_input_w": 220, "solar_voltage_range": "11-50V", "dc_input_connector": "XT60",
       "ac_charge_minutes_0_80": 70, "ups_switchover_ms": 30, "expandable_max_wh": null,
       "weight_kg": 7.8, "msrp_usd": 599, "amazon_asin": null,
-      "brand_product_url": "https://www.ecoflow.com/us/river-2-pro-portable-power-station",
-      "verified": false, "notes": ""
+      "brand_product_url": "https://us.ecoflow.com/products/river-2-pro-portable-power-station",
+      "verified": true, "notes": "Повна зарядка від розетки за 70 хв"
     },
     {
       "slug": "ecoflow-river-3", "brand": "EcoFlow", "model": "RIVER 3", "release_year": 2024,
@@ -42,10 +42,10 @@
       "ac_output_w": 300, "ac_surge_w": 600, "boost_mode_w": 600, "ac_outlets": 2,
       "usb_c_max_w": 100, "output_240v": false,
       "solar_input_w": 110, "solar_voltage_range": "11-30V", "dc_input_connector": "XT60",
-      "ac_charge_minutes_0_80": 40, "ups_switchover_ms": 10, "expandable_max_wh": null,
-      "weight_kg": 3.3, "msrp_usd": 239, "amazon_asin": null,
-      "brand_product_url": "https://www.ecoflow.com/us/river-3",
-      "verified": false, "notes": "10ms UPS — топ для роутера/ПК у сегменті до $250"
+      "ac_charge_minutes_0_80": 40, "ups_switchover_ms": 20, "expandable_max_wh": null,
+      "weight_kg": 3.5, "msrp_usd": 239, "amazon_asin": null,
+      "brand_product_url": "https://us.ecoflow.com/products/river-3-portable-power-station",
+      "verified": true, "notes": "UPS <20ms, шум <30dB — тихий лідер класу до $250"
     },
     {
       "slug": "ecoflow-delta-2", "brand": "EcoFlow", "model": "DELTA 2", "release_year": 2022,
@@ -54,9 +54,9 @@
       "usb_c_max_w": 100, "output_240v": false,
       "solar_input_w": 500, "solar_voltage_range": "11-60V", "dc_input_connector": "XT60",
       "ac_charge_minutes_0_80": 50, "ups_switchover_ms": 30, "expandable_max_wh": 3040,
-      "weight_kg": 12.0, "msrp_usd": 999, "amazon_asin": null,
-      "brand_product_url": "https://www.ecoflow.com/us/delta-2-portable-power-station",
-      "verified": false, "notes": ""
+      "weight_kg": 12.2, "msrp_usd": 999, "amazon_asin": null,
+      "brand_product_url": "https://us.ecoflow.com/products/delta-2-portable-power-station",
+      "verified": true, "notes": ""
     },
     {
       "slug": "ecoflow-delta-2-max", "brand": "EcoFlow", "model": "DELTA 2 Max", "release_year": 2023,
@@ -64,32 +64,32 @@
       "ac_output_w": 2400, "ac_surge_w": 4800, "boost_mode_w": 3400, "ac_outlets": 6,
       "usb_c_max_w": 100, "output_240v": false,
       "solar_input_w": 1000, "solar_voltage_range": "11-60V", "dc_input_connector": "XT60",
-      "ac_charge_minutes_0_80": 60, "ups_switchover_ms": 30, "expandable_max_wh": 6144,
+      "ac_charge_minutes_0_80": 53, "ups_switchover_ms": 30, "expandable_max_wh": 6144,
       "weight_kg": 23.0, "msrp_usd": 1899, "amazon_asin": null,
-      "brand_product_url": "https://www.ecoflow.com/us/delta-2-max-portable-power-station",
-      "verified": false, "notes": ""
+      "brand_product_url": "https://us.ecoflow.com/products/delta-2-max-portable-power-station",
+      "verified": true, "notes": "0-80% за 43 хв при комбінованій зарядці AC+соляра"
     },
     {
       "slug": "ecoflow-delta-3-plus", "brand": "EcoFlow", "model": "DELTA 3 Plus", "release_year": 2024,
       "capacity_wh": 1024, "chemistry": "LFP", "cycles_to_80pct": 4000,
-      "ac_output_w": 1800, "ac_surge_w": 3600, "boost_mode_w": 2400, "ac_outlets": 6,
+      "ac_output_w": 1800, "ac_surge_w": 3600, "boost_mode_w": 2200, "ac_outlets": 6,
       "usb_c_max_w": 140, "output_240v": false,
       "solar_input_w": 500, "solar_voltage_range": "11-60V", "dc_input_connector": "XT60",
       "ac_charge_minutes_0_80": 40, "ups_switchover_ms": 10, "expandable_max_wh": 5000,
       "weight_kg": 12.5, "msrp_usd": 899, "amazon_asin": null,
-      "brand_product_url": "https://www.ecoflow.com/us/delta-3-plus-portable-power-station",
-      "verified": false, "notes": "10ms UPS"
+      "brand_product_url": "https://us.ecoflow.com/products/delta-3-plus-portable-power-station",
+      "verified": true, "notes": "10ms UPS; повна зарядка AC за 56 хв; до 1000W соляри через другий MPPT-порт"
     },
     {
       "slug": "ecoflow-delta-pro", "brand": "EcoFlow", "model": "DELTA Pro", "release_year": 2021,
-      "capacity_wh": 3600, "chemistry": "NMC", "cycles_to_80pct": 3500,
+      "capacity_wh": 3600, "chemistry": "LFP", "cycles_to_80pct": 3500,
       "ac_output_w": 3600, "ac_surge_w": 7200, "boost_mode_w": 4500, "ac_outlets": 5,
       "usb_c_max_w": 100, "output_240v": false,
       "solar_input_w": 1600, "solar_voltage_range": "11-150V", "dc_input_connector": "XT60/MC4-adapter",
       "ac_charge_minutes_0_80": 120, "ups_switchover_ms": 20, "expandable_max_wh": 10800,
       "weight_kg": 45.0, "msrp_usd": 3699, "amazon_asin": null,
-      "brand_product_url": "https://www.ecoflow.com/us/delta-pro-portable-power-station",
-      "verified": false, "notes": "240V можливо через Double Voltage Hub з двома юнітами"
+      "brand_product_url": "https://us.ecoflow.com/products/delta-pro-portable-power-station",
+      "verified": true, "notes": "LFP (виправлено з NMC). 240V через Double Voltage Hub з двома юнітами"
     },
     {
       "slug": "ecoflow-delta-pro-3", "brand": "EcoFlow", "model": "DELTA Pro 3", "release_year": 2024,
@@ -99,96 +99,96 @@
       "solar_input_w": 2600, "solar_voltage_range": "11-150V", "dc_input_connector": "XT60/MC4-adapter",
       "ac_charge_minutes_0_80": 50, "ups_switchover_ms": 10, "expandable_max_wh": 12000,
       "weight_kg": 51.5, "msrp_usd": 3699, "amazon_asin": null,
-      "brand_product_url": "https://www.ecoflow.com/us/delta-pro-3-portable-power-station",
-      "verified": false, "notes": "120/240V dual voltage, колеса"
+      "brand_product_url": "https://us.ecoflow.com/products/delta-pro-3-portable-power-station",
+      "verified": true, "notes": "120/240V dual voltage; соляра = 1600W High-PV + 1000W Low-PV порти"
     },
     {
       "slug": "jackery-explorer-300", "brand": "Jackery", "model": "Explorer 300", "release_year": 2020,
       "capacity_wh": 293, "chemistry": "NMC", "cycles_to_80pct": 500,
       "ac_output_w": 300, "ac_surge_w": 500, "boost_mode_w": null, "ac_outlets": 2,
       "usb_c_max_w": 60, "output_240v": false,
-      "solar_input_w": 90, "solar_voltage_range": "12-30V", "dc_input_connector": "DC8020",
+      "solar_input_w": 90, "solar_voltage_range": "12-30V", "dc_input_connector": "DC8mm",
       "ac_charge_minutes_0_80": 120, "ups_switchover_ms": null, "expandable_max_wh": null,
       "weight_kg": 3.2, "msrp_usd": 299, "amazon_asin": null,
       "brand_product_url": "https://www.jackery.com/products/explorer-300-portable-power-station",
-      "verified": false, "notes": "Старе покоління NMC — у порівняннях програє LFP-аналогам"
+      "verified": false, "notes": "Застаріла NMC-модель; другорядні специфікації не звірені — перевірити перед публікацією або замінити на Explorer 300 Plus"
     },
     {
       "slug": "jackery-explorer-1000-v2", "brand": "Jackery", "model": "Explorer 1000 v2", "release_year": 2024,
       "capacity_wh": 1070, "chemistry": "LFP", "cycles_to_80pct": 4000,
       "ac_output_w": 1500, "ac_surge_w": 3000, "boost_mode_w": null, "ac_outlets": 3,
       "usb_c_max_w": 100, "output_240v": false,
-      "solar_input_w": 400, "solar_voltage_range": "12-60V", "dc_input_connector": "DC8020",
+      "solar_input_w": 400, "solar_voltage_range": "12-60V", "dc_input_connector": "DC8mm",
       "ac_charge_minutes_0_80": 60, "ups_switchover_ms": 20, "expandable_max_wh": null,
       "weight_kg": 10.8, "msrp_usd": 799, "amazon_asin": null,
-      "brand_product_url": "https://www.jackery.com/products/explorer-1000-v2-portable-power-station",
-      "verified": false, "notes": ""
+      "brand_product_url": "https://www.jackery.com/products/jackery-explorer-1000-v2",
+      "verified": true, "notes": "Повна зарядка AC за ~1 год (1000W вхід, 1200W в emergency mode)"
     },
     {
       "slug": "jackery-explorer-2000-plus", "brand": "Jackery", "model": "Explorer 2000 Plus", "release_year": 2023,
       "capacity_wh": 2042, "chemistry": "LFP", "cycles_to_80pct": 4000,
       "ac_output_w": 3000, "ac_surge_w": 6000, "boost_mode_w": null, "ac_outlets": 5,
       "usb_c_max_w": 100, "output_240v": false,
-      "solar_input_w": 1400, "solar_voltage_range": "11-60V", "dc_input_connector": "DC8020",
+      "solar_input_w": 1400, "solar_voltage_range": "11-60V", "dc_input_connector": "DC8mm",
       "ac_charge_minutes_0_80": 102, "ups_switchover_ms": null, "expandable_max_wh": 12000,
       "weight_kg": 27.9, "msrp_usd": 2199, "amazon_asin": null,
       "brand_product_url": "https://www.jackery.com/products/explorer-2000-plus-portable-power-station",
-      "verified": false, "notes": "240V через два юніти + parallel box"
+      "verified": true, "notes": "12kWh з 5 доп. батареями; до 24kWh з двома юнітами + parallel box (240V)"
     },
     {
       "slug": "jackery-explorer-3000-pro", "brand": "Jackery", "model": "Explorer 3000 Pro", "release_year": 2023,
       "capacity_wh": 3024, "chemistry": "NMC", "cycles_to_80pct": 1000,
       "ac_output_w": 3000, "ac_surge_w": 6000, "boost_mode_w": null, "ac_outlets": 5,
       "usb_c_max_w": 100, "output_240v": false,
-      "solar_input_w": 1200, "solar_voltage_range": "11-60V", "dc_input_connector": "DC8020",
+      "solar_input_w": 1400, "solar_voltage_range": "11-60V", "dc_input_connector": "DC8mm",
       "ac_charge_minutes_0_80": 144, "ups_switchover_ms": null, "expandable_max_wh": null,
       "weight_kg": 29.0, "msrp_usd": 2799, "amazon_asin": null,
       "brand_product_url": "https://www.jackery.com/products/explorer-3000-pro-portable-power-station",
-      "verified": false, "notes": "NMC при такій ціні — важливий пойнт у порівняннях"
+      "verified": true, "notes": "Соляра 1400W через два входи по 700W (виправлено з 1200W). NMC при такій ціні — ключовий пойнт у порівняннях"
     },
     {
       "slug": "bluetti-eb3a", "brand": "Bluetti", "model": "EB3A", "release_year": 2022,
       "capacity_wh": 268, "chemistry": "LFP", "cycles_to_80pct": 2500,
       "ac_output_w": 600, "ac_surge_w": 1200, "boost_mode_w": 1200, "ac_outlets": 2,
       "usb_c_max_w": 100, "output_240v": false,
-      "solar_input_w": 200, "solar_voltage_range": "12-28V", "dc_input_connector": "DC7909",
-      "ac_charge_minutes_0_80": 45, "ups_switchover_ms": 20, "expandable_max_wh": null,
+      "solar_input_w": 200, "solar_voltage_range": "12-28V", "dc_input_connector": "DC7909 (MC4-кабель у комплекті)",
+      "ac_charge_minutes_0_80": 30, "ups_switchover_ms": 20, "expandable_max_wh": null,
       "weight_kg": 4.6, "msrp_usd": 299, "amazon_asin": null,
       "brand_product_url": "https://www.bluettipower.com/products/bluetti-eb3a-portable-power-station",
-      "verified": false, "notes": "600W із 268Wh — аномально потужний для класу"
+      "verified": true, "notes": "600W із 268Wh — аномально потужний для класу; 0-80% за 30 хв"
     },
     {
       "slug": "bluetti-eb70s", "brand": "Bluetti", "model": "EB70S", "release_year": 2022,
       "capacity_wh": 716, "chemistry": "LFP", "cycles_to_80pct": 2500,
       "ac_output_w": 800, "ac_surge_w": 1400, "boost_mode_w": null, "ac_outlets": 4,
       "usb_c_max_w": 100, "output_240v": false,
-      "solar_input_w": 200, "solar_voltage_range": "12-28V", "dc_input_connector": "DC7909",
+      "solar_input_w": 200, "solar_voltage_range": "12-28V", "dc_input_connector": "DC7909 (MC4-кабель у комплекті)",
       "ac_charge_minutes_0_80": 180, "ups_switchover_ms": null, "expandable_max_wh": null,
       "weight_kg": 9.7, "msrp_usd": 599, "amazon_asin": null,
-      "brand_product_url": "https://www.bluettipower.com/products/eb70s-portable-power-station",
-      "verified": false, "notes": ""
+      "brand_product_url": "https://www.bluettipower.com/products/eb70s-716wh-800w-portable-power-station-best-solar-generator-for-camping",
+      "verified": true, "notes": "Знятий з виробництва в частині регіонів — стежити за доступністю"
     },
     {
       "slug": "bluetti-ac70", "brand": "Bluetti", "model": "AC70", "release_year": 2023,
       "capacity_wh": 768, "chemistry": "LFP", "cycles_to_80pct": 3000,
       "ac_output_w": 1000, "ac_surge_w": 2000, "boost_mode_w": 2000, "ac_outlets": 2,
       "usb_c_max_w": 100, "output_240v": false,
-      "solar_input_w": 500, "solar_voltage_range": "12-58V", "dc_input_connector": "DC7909",
+      "solar_input_w": 500, "solar_voltage_range": "12-58V", "dc_input_connector": "DC7909 (MC4-кабель у комплекті)",
       "ac_charge_minutes_0_80": 45, "ups_switchover_ms": 20, "expandable_max_wh": null,
       "weight_kg": 10.2, "msrp_usd": 599, "amazon_asin": null,
-      "brand_product_url": "https://www.bluettipower.com/products/bluetti-ac70",
-      "verified": false, "notes": ""
+      "brand_product_url": "https://www.bluettipower.com/products/ac70",
+      "verified": true, "notes": ""
     },
     {
       "slug": "bluetti-ac180", "brand": "Bluetti", "model": "AC180", "release_year": 2023,
       "capacity_wh": 1152, "chemistry": "LFP", "cycles_to_80pct": 3500,
       "ac_output_w": 1800, "ac_surge_w": 2700, "boost_mode_w": 2700, "ac_outlets": 4,
       "usb_c_max_w": 100, "output_240v": false,
-      "solar_input_w": 500, "solar_voltage_range": "12-60V", "dc_input_connector": "DC7909",
+      "solar_input_w": 500, "solar_voltage_range": "12-60V", "dc_input_connector": "DC7909 (MC4-кабель у комплекті)",
       "ac_charge_minutes_0_80": 45, "ups_switchover_ms": 20, "expandable_max_wh": null,
       "weight_kg": 16.0, "msrp_usd": 999, "amazon_asin": null,
       "brand_product_url": "https://www.bluettipower.com/products/bluetti-ac180",
-      "verified": false, "notes": "Бестселер бренду"
+      "verified": true, "notes": "Бестселер бренду"
     },
     {
       "slug": "bluetti-ac200l", "brand": "Bluetti", "model": "AC200L", "release_year": 2023,
@@ -198,19 +198,19 @@
       "solar_input_w": 1200, "solar_voltage_range": "12-145V", "dc_input_connector": "DC7909/MC4-adapter",
       "ac_charge_minutes_0_80": 90, "ups_switchover_ms": 20, "expandable_max_wh": 8192,
       "weight_kg": 28.3, "msrp_usd": 1699, "amazon_asin": null,
-      "brand_product_url": "https://www.bluettipower.com/products/bluetti-ac200l",
-      "verified": false, "notes": ""
+      "brand_product_url": "https://www.bluettipower.com/products/ac200l",
+      "verified": true, "notes": "30A RV-вихід"
     },
     {
       "slug": "bluetti-elite-200-v2", "brand": "Bluetti", "model": "Elite 200 V2", "release_year": 2024,
       "capacity_wh": 2073, "chemistry": "LFP", "cycles_to_80pct": 6000,
-      "ac_output_w": 2600, "ac_surge_w": 5200, "boost_mode_w": null, "ac_outlets": 4,
+      "ac_output_w": 2600, "ac_surge_w": 5200, "boost_mode_w": 3900, "ac_outlets": 4,
       "usb_c_max_w": 100, "output_240v": false,
       "solar_input_w": 1000, "solar_voltage_range": "12-60V", "dc_input_connector": "DC7909/MC4-adapter",
       "ac_charge_minutes_0_80": 50, "ups_switchover_ms": 20, "expandable_max_wh": null,
-      "weight_kg": 24.5, "msrp_usd": 1699, "amazon_asin": null,
-      "brand_product_url": "https://www.bluettipower.com/products/bluetti-elite-200-v2",
-      "verified": false, "notes": "6000 циклів — рекорд сегмента, ~15 років щоденного використання"
+      "weight_kg": 24.2, "msrp_usd": 1099, "amazon_asin": null,
+      "brand_product_url": "https://www.bluettipower.com/products/elite-200-v2-portable-power-station",
+      "verified": true, "notes": "6000 циклів — рекорд сегмента (~15 років щоденного циклу). Power Lifting 3900W. Часто у продажу за ~$899"
     },
     {
       "slug": "anker-solix-c300", "brand": "Anker", "model": "SOLIX C300", "release_year": 2024,
@@ -220,8 +220,8 @@
       "solar_input_w": 100, "solar_voltage_range": "11-32V", "dc_input_connector": "XT60",
       "ac_charge_minutes_0_80": 50, "ups_switchover_ms": 20, "expandable_max_wh": null,
       "weight_kg": 4.2, "msrp_usd": 299, "amazon_asin": null,
-      "brand_product_url": "https://www.anker.com/products/a1726-solix-c300-portable-power-station",
-      "verified": false, "notes": "140W USB-C — найшвидший у малому класі"
+      "brand_product_url": "https://www.ankersolix.com/products/c300",
+      "verified": true, "notes": "Два USB-C по 140W — найшвидша USB-зарядка малого класу. Solar 100W звірити в мануалі"
     },
     {
       "slug": "anker-solix-c1000", "brand": "Anker", "model": "SOLIX C1000", "release_year": 2023,
@@ -231,8 +231,8 @@
       "solar_input_w": 600, "solar_voltage_range": "11-60V", "dc_input_connector": "XT60",
       "ac_charge_minutes_0_80": 43, "ups_switchover_ms": 20, "expandable_max_wh": 2112,
       "weight_kg": 12.9, "msrp_usd": 999, "amazon_asin": null,
-      "brand_product_url": "https://www.anker.com/products/a1761-solix-c1000-portable-power-station",
-      "verified": false, "notes": "Часті глибокі знижки — реальна ціна ~$500-650"
+      "brand_product_url": "https://www.ankersolix.com/products/c1000",
+      "verified": true, "notes": "Повна зарядка AC за 58 хв. Часті глибокі знижки — реальна ціна ~$500-650"
     },
     {
       "slug": "anker-solix-f2000", "brand": "Anker", "model": "SOLIX F2000 (767)", "release_year": 2022,
@@ -242,8 +242,8 @@
       "solar_input_w": 1000, "solar_voltage_range": "11-60V", "dc_input_connector": "XT60",
       "ac_charge_minutes_0_80": 85, "ups_switchover_ms": null, "expandable_max_wh": 4096,
       "weight_kg": 30.5, "msrp_usd": 1999, "amazon_asin": null,
-      "brand_product_url": "https://www.anker.com/products/a1780-solix-f2000-portable-power-station",
-      "verified": false, "notes": "Колеса й висувна ручка"
+      "brand_product_url": "https://www.ankersolix.com/products/f2000",
+      "verified": false, "notes": "Не звірено в цій сесії — перевірити на ankersolix.com перед публікацією"
     },
     {
       "slug": "anker-solix-f3800", "brand": "Anker", "model": "SOLIX F3800", "release_year": 2023,
@@ -253,19 +253,19 @@
       "solar_input_w": 2400, "solar_voltage_range": "11-160V", "dc_input_connector": "XT60/MC4-adapter",
       "ac_charge_minutes_0_80": 80, "ups_switchover_ms": 20, "expandable_max_wh": 26880,
       "weight_kg": 60.0, "msrp_usd": 3999, "amazon_asin": null,
-      "brand_product_url": "https://www.anker.com/products/a1790-solix-f3800-portable-power-station",
-      "verified": false, "notes": "120/240V, NEMA 14-50 (EV-зарядка), розширення до 26.9kWh"
+      "brand_product_url": "https://www.ankersolix.com/products/f3800",
+      "verified": true, "notes": "120/240V, NEMA 14-50 (EV-зарядка), розширення до 26.9kWh, інтеграція з домашньою сонячною системою"
     },
     {
       "slug": "goal-zero-yeti-500x", "brand": "Goal Zero", "model": "Yeti 500X", "release_year": 2020,
       "capacity_wh": 505, "chemistry": "NMC", "cycles_to_80pct": 500,
       "ac_output_w": 300, "ac_surge_w": 1200, "boost_mode_w": null, "ac_outlets": 2,
       "usb_c_max_w": 60, "output_240v": false,
-      "solar_input_w": 120, "solar_voltage_range": "13-22V", "dc_input_connector": "8mm/Anderson",
+      "solar_input_w": 150, "solar_voltage_range": "13-22V", "dc_input_connector": "8mm/Anderson",
       "ac_charge_minutes_0_80": 360, "ups_switchover_ms": null, "expandable_max_wh": null,
       "weight_kg": 5.8, "msrp_usd": 699, "amazon_asin": null,
-      "brand_product_url": "https://www.goalzero.com/products/goal-zero-yeti-500x-portable-power-station",
-      "verified": false, "notes": "Застаріла платформа — на сторінці показуємо сучасні альтернативи"
+      "brand_product_url": "https://goalzero.com/products/goal-zero-yeti-500x-portable-power-station",
+      "verified": false, "notes": "РОЗБІЖНІСТЬ: ємність 505 чи 497Wh у різних джерелах; solar 150W (виправлено зі 120). Розглянути заміну на новіший Yeti 500 (LFP)"
     },
     {
       "slug": "goal-zero-yeti-1500x", "brand": "Goal Zero", "model": "Yeti 1500X", "release_year": 2020,
@@ -275,19 +275,19 @@
       "solar_input_w": 600, "solar_voltage_range": "14-50V", "dc_input_connector": "8mm/Anderson/HPP",
       "ac_charge_minutes_0_80": 180, "ups_switchover_ms": null, "expandable_max_wh": null,
       "weight_kg": 20.9, "msrp_usd": 1999, "amazon_asin": null,
-      "brand_product_url": "https://www.goalzero.com/products/goal-zero-yeti-1500x-portable-power-station",
-      "verified": false, "notes": ""
+      "brand_product_url": "https://goalzero.com/products/goal-zero-yeti-1500x-portable-power-station",
+      "verified": false, "notes": "Другорядні специфікації не звірені повністю — перевірити на goalzero.com"
     },
     {
       "slug": "dji-power-1000", "brand": "DJI", "model": "Power 1000", "release_year": 2024,
       "capacity_wh": 1024, "chemistry": "LFP", "cycles_to_80pct": 4000,
-      "ac_output_w": 2200, "ac_surge_w": 4400, "boost_mode_w": null, "ac_outlets": 2,
+      "ac_output_w": 2200, "ac_surge_w": 2600, "boost_mode_w": null, "ac_outlets": 2,
       "usb_c_max_w": 140, "output_240v": false,
       "solar_input_w": 800, "solar_voltage_range": "12-30V", "dc_input_connector": "XT60 (SDC)",
       "ac_charge_minutes_0_80": 50, "ups_switchover_ms": 20, "expandable_max_wh": null,
       "weight_kg": 13.0, "msrp_usd": 999, "amazon_asin": null,
-      "brand_product_url": "https://www.dji.com/power-1000",
-      "verified": false, "notes": "Швидка зарядка дронів DJI через SDC — унікальна ніша"
+      "brand_product_url": "https://www.dji.com/power-1000/specs",
+      "verified": true, "notes": "23dB — найтихіший у класі; 2600W на 30 с, пік 4400W; швидка зарядка дронів DJI через SDC"
     }
   ]
 }

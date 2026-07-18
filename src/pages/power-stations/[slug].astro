@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import db from '../../data/power_stations.json';
+import pairsData from '../../data/compare_pairs.json';
 import {
   APPLIANCES, runtimeHours, formatRuntime, dollarsPerWh, whPerKg,
   fullName, alternatives, capacityClass, effectiveOutput,
@@ -19,6 +20,14 @@ const name = fullName(s);
 const alts = alternatives(s, all);
 const fridgeRt = formatRuntime(runtimeHours(s, 150));
 const cpapNights = runtimeHours(s, 40) ? (runtimeHours(s, 40) / 8).toFixed(1) : null;
+
+const bySlug = Object.fromEntries(all.map((x) => [x.slug, x]));
+const comparisons = pairsData.pairs
+  .filter((p) => p.a === s.slug || p.b === s.slug)
+  .map((p) => ({
+    url: `/compare/${p.a}-vs-${p.b}/`,
+    other: bySlug[p.a === s.slug ? p.b : p.a],
+  }));
 
 const title = `${name} Specs: Capacity, Output, Runtime Tables (${s.release_year})`;
 const description = `${name}: ${s.capacity_wh}Wh ${s.chemistry} battery, ${s.ac_output_w}W AC output, ${s.solar_input_w}W solar input. Full specs, runtime for 12 appliances, and closest alternatives.`;
@@ -142,6 +151,19 @@ const schema = {
       </div>
     ))}
   </div>
+
+  {comparisons.length > 0 && (
+    <>
+      <h2>Head-to-head comparisons</h2>
+      <div class="grid">
+        {comparisons.map((c) => (
+          <div class="card">
+            <a href={c.url}>{name} vs {fullName(c.other)} →</a>
+          </div>
+        ))}
+      </div>
+    </>
+  )}
 
   <h2>FAQ</h2>
   {faq.map((f) => (

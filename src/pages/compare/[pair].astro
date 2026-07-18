@@ -1,0 +1,86 @@
+---
+import Base from '../../layouts/Base.astro';
+import db from '../../data/power_stations.json';
+import pairsData from '../../data/compare_pairs.json';
+import { fullName, capacityClass } from '../../lib/utils.js';
+import { pairSlug, compareRows, autoVerdict } from '../../lib/compare.js';
+
+export function getStaticPaths() {
+  const bySlug = Object.fromEntries(db.power_stations.map((s) => [s.slug, s]));
+  return pairsData.pairs.map((p) => {
+    const a = bySlug[p.a];
+    const b = bySlug[p.b];
+    if (!a || !b) throw new Error(`Unknown slug in compare_pairs.json: ${p.a} / ${p.b}`);
+    return { params: { pair: pairSlug(a, b) }, props: { a, b, manualVerdict: p.verdict ?? null } };
+  });
+}
+
+const { a, b, manualVerdict } = Astro.props;
+const an = fullName(a);
+const bn = fullName(b);
+const rows = compareRows(a, b);
+const verdict = manualVerdict ? [manualVerdict] : autoVerdict(a, b);
+const aWins = rows.filter((r) => r[3] === 1).length;
+const bWins = rows.filter((r) => r[3] === -1).length;
+
+const title = `${an} vs ${bn}: Full Spec Comparison (2026)`;
+const description = `${an} (${a.capacity_wh}Wh, ${a.ac_output_w}W) vs ${bn} (${b.capacity_wh}Wh, ${b.ac_output_w}W): battery chemistry, cycle life, solar input, UPS mode and value compared side by side.`;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Comparisons', item: new URL('/compare/', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: `${an} vs ${bn}` },
+      ],
+    },
+    { '@type': 'Product', name: an, brand: { '@type': 'Brand', name: a.brand }, offers: { '@type': 'Offer', price: a.msrp_usd, priceCurrency: 'USD' } },
+    { '@type': 'Product', name: bn, brand: { '@type': 'Brand', name: b.brand }, offers: { '@type': 'Offer', price: b.msrp_usd, priceCurrency: 'USD' } },
+  ],
+};
+---
+<Base {title} {description} {schema}>
+  <nav class="crumbs"><a href="/compare/">Comparisons</a> › {an} vs {bn}</nav>
+  <h1>{an} vs {bn}</h1>
+  <p class="muted">{capacityClass(a.capacity_wh)}{capacityClass(a.capacity_wh) !== capacityClass(b.capacity_wh) ? ` vs ${capacityClass(b.capacity_wh)}` : ''} · spec-by-spec, winner marked per row</p>
+
+  <h2>Verdict</h2>
+  {verdict.map((p) => <p style="max-width:680px;">{p}</p>)}
+
+  <h2>Side-by-side specifications</h2>
+  <p class="muted" style="font-size:0.85rem;">✓ marks the better number in each row ({an}: {aWins} wins · {bn}: {bWins} wins — but weigh the rows that matter for <em>your</em> use, not the count).</p>
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th><a href={`/power-stations/${a.slug}/`}>{an}</a></th>
+        <th><a href={`/power-stations/${b.slug}/`}>{bn}</a></th>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map(([label, av, bv, w]) => (
+        <tr>
+          <th>{label}</th>
+          <td style={w === 1 ? 'background:var(--accent-soft); font-weight:600;' : ''}>{av}{w === 1 ? ' ✓' : ''}</td>
+          <td style={w === -1 ? 'background:var(--accent-soft); font-weight:600;' : ''}>{bv}{w === -1 ? ' ✓' : ''}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2>Dig deeper</h2>
+  <div class="grid">
+    <div class="card">
+      <a href={`/power-stations/${a.slug}/`}>{an} — full specs & runtimes →</a>
+    </div>
+    <div class="card">
+      <a href={`/power-stations/${b.slug}/`}>{bn} — full specs & runtimes →</a>
+    </div>
+  </div>
+
+  <div class="disclosure">
+    Specifications from manufacturer documentation (<a href={a.brand_product_url} rel="nofollow noopener">{a.brand}</a>, <a href={b.brand_product_url} rel="nofollow noopener">{b.brand}</a>). Launch prices shown; street prices change often — check current pricing before deciding on value.
+  </div>
+</Base>
