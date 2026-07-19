@@ -47,7 +47,10 @@ function strengths(x, y) {
   if (effectiveOutput(x) >= effectiveOutput(y) * 1.2) out.push(`${effectiveOutput(x).toLocaleString()}W output vs ${effectiveOutput(y).toLocaleString()}W`);
   if (x.output_240v && !y.output_240v) out.push('240V output for home circuits');
   if (dollarsPerWh(x) <= dollarsPerWh(y) * 0.85) out.push(`better value at launch ($${dollarsPerWh(x).toFixed(2)}/Wh vs $${dollarsPerWh(y).toFixed(2)}/Wh)`);
-  if (x.weight_kg <= y.weight_kg * 0.8) out.push(`${(y.weight_kg - x.weight_kg).toFixed(1)} kg lighter`);
+  if (x.weight_kg <= y.weight_kg * 0.8) {
+    const diff = y.weight_kg - x.weight_kg;
+    out.push(`a ${diff % 1 === 0 ? diff : diff.toFixed(1)} kg weight saving`);
+  }
   if ((x.ac_charge_minutes_0_80 ?? 9999) <= (y.ac_charge_minutes_0_80 ?? 9999) * 0.7) out.push('a much faster AC recharge');
   if ((x.ups_switchover_ms ?? 9999) < (y.ups_switchover_ms ?? 9999)) {
     if (x.ups_switchover_ms && x.ups_switchover_ms <= 15) out.push(`${x.ups_switchover_ms}ms UPS switchover (safe for desktop PCs)`);
@@ -65,27 +68,45 @@ function listOut(items, max = 3) {
 }
 
 // Deterministic verdict paragraphs generated from the data.
+// Phrasing varies per pair (seeded by slugs) so pages don't read like clones,
+// but a given pair always renders the same text build after build.
+function seedFrom(a, b) {
+  let h = 0;
+  for (const ch of a.slug + b.slug) h = (h * 31 + ch.charCodeAt(0)) % 997;
+  return h;
+}
+
 export function autoVerdict(a, b) {
   const an = fullName(a);
   const bn = fullName(b);
   const aS = strengths(a, b);
   const bS = strengths(b, a);
+  const seed = seedFrom(a, b);
   const paras = [];
 
   const sameClass = Math.max(a.capacity_wh, b.capacity_wh) / Math.min(a.capacity_wh, b.capacity_wh) < 1.5;
-  paras.push(
-    sameClass
-      ? `The ${an} and ${bn} compete head-to-head in the same capacity class, so the decision comes down to the details below rather than raw size.`
-      : `These two sit in different capacity classes (${a.capacity_wh.toLocaleString()}Wh vs ${b.capacity_wh.toLocaleString()}Wh), so first decide how much stored energy you actually need — then check whether the smaller unit's other advantages matter to you.`
-  );
+  const sameOpeners = [
+    `The ${an} and the ${bn} are after the same buyer, so this one is decided in the details.`,
+    `Same class, similar money. What actually separates the ${an} from the ${bn} sits a few rows down the spec table.`,
+    `On paper these two overlap almost completely. The differences that matter take some digging, so we did the digging.`,
+  ];
+  const diffOpeners = [
+    `First things first: these are different sizes (${a.capacity_wh.toLocaleString()}Wh vs ${b.capacity_wh.toLocaleString()}Wh). Settle how much stored energy you need before anything else on this page matters.`,
+    `Capacity is the headline gap here: ${a.capacity_wh.toLocaleString()}Wh against ${b.capacity_wh.toLocaleString()}Wh. If the smaller unit covers your loads, its other advantages start to count.`,
+  ];
+  paras.push(sameClass ? sameOpeners[seed % sameOpeners.length] : diffOpeners[seed % diffOpeners.length]);
 
-  if (aS.length) paras.push(`The ${an}'s case: ${listOut(aS)}.`);
-  if (bS.length) paras.push(`The ${bn}'s case: ${listOut(bS)}.`);
-  if (!aS.length && !bS.length) paras.push(`On paper these units are remarkably close — pick whichever is cheaper on the day, or whichever brand's app and ecosystem you already use.`);
+  const caseWords = [`What the %N brings:`, `The case for the %N:`, `In the %N's corner:`];
+  if (aS.length) paras.push(`${caseWords[seed % caseWords.length].replace('%N', an)} ${listOut(aS)}.`);
+  if (bS.length) paras.push(`${caseWords[(seed + 1) % caseWords.length].replace('%N', bn)} ${listOut(bS)}.`);
+  if (!aS.length && !bS.length) {
+    paras.push(`Truthfully, these are near-twins. Buy whichever is discounted this week, or stick with the app ecosystem you already own.`);
+  }
 
+  const closers = [`Bottom line:`, `If we had to pick:`, `Our take:`];
   const pick = [];
-  if (aS.length) pick.push(`choose the ${an} if you value ${listOut(aS, 2)}`);
-  if (bS.length) pick.push(`go with the ${bn} for ${listOut(bS, 2)}`);
-  if (pick.length) paras.push(`Bottom line: ${pick.join('; ')}.`);
+  if (aS.length) pick.push(`the ${an} makes sense if you care about ${listOut(aS, 2)}`);
+  if (bS.length) pick.push(`the ${bn} wins on ${listOut(bS, 2)}`);
+  if (pick.length) paras.push(`${closers[seed % closers.length]} ${pick.join(', while ')}.`);
   return paras;
 }

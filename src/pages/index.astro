@@ -9,16 +9,17 @@ const bestValue = [...stations].sort((a, b) => dollarsPerWh(a) - dollarsPerWh(b)
 const newest = [...stations].sort((a, b) => b.release_year - a.release_year).slice(0, 4);
 
 const title = 'WattLibrary — Portable Power Station Specs, Runtimes & Compatibility';
-const description = `Independent database of ${stations.length}+ portable power stations. Real specifications, runtime tables for common appliances, and solar panel compatibility — no fluff, just data.`;
+const description = `A structured database of ${stations.length} portable power stations: verified capacity, inverter output, battery chemistry, solar input limits, and runtime tables for common appliances.`;
 ---
 <Base {title} {description}>
   <section class="hero" slot="hero">
     <div class="wrap">
       <p class="eyebrow">The portable power station database</p>
-      <h1>Every spec that matters. One consistent database.</h1>
+      <h1>Power station specs, without the marketing gloss</h1>
       <p class="lead">
-        Capacity, real output, battery chemistry, solar voltage windows — for {stations.length}+ power stations from {brands} brands,
-        compiled from manufacturer documentation and organized so you can actually compare.
+        We keep a structured database of {stations.length} portable power stations from {brands} brands. Real capacity, inverter output,
+        battery chemistry, solar limits. The numbers come from spec sheets and manuals, get checked before they go live, and read
+        the same way for every brand, so you can compare like for like.
       </p>
       <div class="btn-row">
         <a href="/power-stations/" class="btn">Browse all {stations.length} models</a>
@@ -53,9 +54,14 @@ const description = `Independent database of ${stations.length}+ portable power 
   </div>
 
   <h2>Why another power station site?</h2>
-  <p style="max-width:640px;">
-    Most "best power station" lists are opinions. WattLibrary is a database: we track the numbers that determine whether a unit
-    fits your use case — LiFePO4 vs NMC cycle life, UPS switchover times, MPPT voltage windows for solar charging — and we show
-    our math on every runtime estimate.
+  <p style="max-width:660px;">
+    A product page will happily call a 268Wh box a "solar generator". It won't mention that the inverter eats roughly 15% of
+    every charge, or that an NMC pack rated for 500 cycles is basically a consumable next to a 3,000-cycle LiFePO4 one, or that
+    your panel needs to land inside a specific voltage window before the unit will accept a single watt from it.
+  </p>
+  <p style="max-width:660px;">
+    That gap is what this site exists for. We normalize the numbers brands report in incompatible ways, flag the ones they'd
+    rather you didn't compare, and show the working behind every runtime estimate. When we're not sure about a figure, it
+    stays out of the database until we are.
   </p>
 </Base>

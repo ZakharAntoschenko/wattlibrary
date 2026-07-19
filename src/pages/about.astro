@@ -1,28 +1,35 @@
 ---
 import Base from '../layouts/Base.astro';
 const title = 'About WattLibrary';
-const description = 'WattLibrary is an independent portable power station database: how we collect specs and estimate runtimes.';
+const description = 'What WattLibrary is, where the specs come from, and how runtime estimates are calculated.';
 ---
 <Base {title} {description}>
   <h1>About WattLibrary</h1>
-  <p style="max-width:640px;">
-    WattLibrary started with a simple frustration: power station spec sheets are scattered, inconsistent, and sometimes
-    misleading. We collect the numbers into one structured database and present them the same way for every model, so
-    comparisons are fair.
+  <p style="max-width:660px;">
+    This site started with a spreadsheet. Comparing power stations meant keeping fifteen browser tabs open, because every brand
+    reports its numbers differently: one quotes surge wattage in the headline, another buries it in a PDF manual, a third
+    invents its own name for boost mode. The spreadsheet kept growing until it made more sense to publish it.
   </p>
-  <h2>How we work</h2>
-  <p style="max-width:640px;">
-    Specifications come from manufacturer documentation and manuals; each listing links to its source. Runtime estimates use a
-    transparent formula (capacity × 85% inverter efficiency ÷ appliance draw) — we show the assumptions, not just the result.
-    When we're not sure about a number, we don't publish it.
+  <h2>Where the numbers come from</h2>
+  <p style="max-width:660px;">
+    Manufacturer documentation, first and foremost: product pages, spec sheets, user manuals. Each listing links to its source.
+    Where sources contradict each other (it happens more than you'd expect, sometimes on the manufacturer's own site), the
+    listing is held back until we can resolve the conflict, and the discrepancy is noted.
+  </p>
+  <h2>How runtime estimates work</h2>
+  <p style="max-width:660px;">
+    One formula, shown in the open: battery capacity, times 85% inverter efficiency, divided by the appliance's average draw.
+    It's deliberately conservative. Compressor appliances like refrigerators cycle on and off, so real-world numbers usually
+    come out better than our table. We'd rather you be pleasantly surprised than caught short during an outage.
   </p>
   <h2>Independence</h2>
-  <p style="max-width:640px;">
-    WattLibrary currently runs no ads and contains no affiliate links. No brand pays to be listed, and no brand can pay to
-    change its numbers. If that ever changes, we'll disclose it clearly on every affected page.
+  <p style="max-width:660px;">
+    No ads, no affiliate links, no sponsored placements. No brand pays to be listed and no brand can pay to change its numbers.
+    If that ever changes, the disclosure will be on every affected page, not buried here.
   </p>
   <h2>Corrections</h2>
-  <p style="max-width:640px;">
-    Spotted an error? Email us and we'll verify and correct it within 24 hours: hello@wattlibrary.com
+  <p style="max-width:660px;">
+    Spotted a wrong number? Tell us: hello@wattlibrary.com. Verified corrections ship within a day, and honestly, we're
+    grateful for them. A database is only worth its accuracy.
   </p>
 </Base>

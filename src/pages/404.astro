@@ -1,0 +1,13 @@
+---
+import Base from '../layouts/Base.astro';
+const title = 'Page not found | WattLibrary';
+const description = 'This page does not exist. Browse the full power station database instead.';
+---
+<Base {title} {description}>
+  <h1>Page not found</h1>
+  <p class="lead">This page doesn't exist — maybe the model was renamed, or the link is broken.</p>
+  <div class="btn-row" style="margin-top:1rem;">
+    <a href="/power-stations/" class="btn">Browse the database</a>
+    <a href="/compare/" class="btn btn-ghost">See comparisons</a>
+  </div>
+</Base>
