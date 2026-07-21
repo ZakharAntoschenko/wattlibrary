@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import db from '../../data/power_stations.json';
 import pairsData from '../../data/compare_pairs.json';
-import { fullName, capacityClass } from '../../lib/utils.js';
+import { fullName, capacityClass, clampMeta } from '../../lib/utils.js';
 import { pairSlug, compareRows, autoVerdict } from '../../lib/compare.js';
 
 export function getStaticPaths() {
@@ -23,8 +23,10 @@ const verdict = manualVerdict ? [manualVerdict] : autoVerdict(a, b);
 const aWins = rows.filter((r) => r[3] === 1).length;
 const bWins = rows.filter((r) => r[3] === -1).length;
 
-const title = `${an} vs ${bn}: Full Spec Comparison (2026)`;
-const description = `${an} (${a.capacity_wh}Wh, ${a.ac_output_w}W) vs ${bn} (${b.capacity_wh}Wh, ${b.ac_output_w}W): battery chemistry, cycle life, solar input, UPS mode and value compared side by side.`;
+const title = `${an} vs ${bn}: Specs Compared`;
+const description = clampMeta(
+  `${an} (${a.capacity_wh}Wh/${a.ac_output_w}W) vs ${bn} (${b.capacity_wh}Wh/${b.ac_output_w}W): chemistry, cycle life, solar input, UPS and value, side by side.`
+);
 
 const schema = {
   '@context': 'https://schema.org',

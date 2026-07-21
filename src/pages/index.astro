@@ -9,7 +9,7 @@ const bestValue = [...stations].sort((a, b) => dollarsPerWh(a) - dollarsPerWh(b)
 const newest = [...stations].sort((a, b) => b.release_year - a.release_year).slice(0, 4);
 
 const title = 'WattLibrary — Portable Power Station Specs, Runtimes & Compatibility';
-const description = `A structured database of ${stations.length} portable power stations: verified capacity, inverter output, battery chemistry, solar input limits, and runtime tables for common appliances.`;
+const description = `A structured database of ${stations.length} portable power stations: verified capacity, inverter output, chemistry, solar limits and appliance runtimes.`;
 ---
 <Base {title} {description}>
   <section class="hero" slot="hero">

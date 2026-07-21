@@ -4,7 +4,7 @@ import db from '../../data/power_stations.json';
 import pairsData from '../../data/compare_pairs.json';
 import {
   APPLIANCES, runtimeHours, formatRuntime, dollarsPerWh, whPerKg,
-  fullName, alternatives, capacityClass, effectiveOutput,
+  fullName, alternatives, capacityClass, effectiveOutput, clampMeta,
 } from '../../lib/utils.js';
 
 export function getStaticPaths() {
@@ -29,8 +29,10 @@ const comparisons = pairsData.pairs
     other: bySlug[p.a === s.slug ? p.b : p.a],
   }));
 
-const title = `${name} Specs: Capacity, Output, Runtime Tables (${s.release_year})`;
-const description = `${name}: ${s.capacity_wh}Wh ${s.chemistry} battery, ${s.ac_output_w}W AC output, ${s.solar_input_w}W solar input. Full specs, runtime for 12 appliances, and closest alternatives.`;
+const title = `${name} Specs & Runtimes (${s.release_year})`;
+const description = clampMeta(
+  `${name}: ${s.capacity_wh}Wh ${s.chemistry}, ${s.ac_output_w}W AC out, ${s.solar_input_w}W solar in. Full specs, runtimes for 12 appliances and closest alternatives.`
+);
 
 const faq = [
   {

@@ -4,8 +4,8 @@ import db from '../../data/power_stations.json';
 import { fullName, dollarsPerWh } from '../../lib/utils.js';
 
 const stations = [...db.power_stations].sort((a, b) => a.capacity_wh - b.capacity_wh);
-const title = `Compare ${stations.length} Portable Power Stations by Specs | WattLibrary`;
-const description = `Filterable database of ${stations.length} portable power stations: capacity, AC output, battery chemistry, solar input, weight and price-per-Wh. EcoFlow, Jackery, Bluetti, Anker and more.`;
+const title = `Compare ${stations.length} Portable Power Stations by Specs`;
+const description = `Filterable database of ${stations.length} power stations: capacity, AC output, chemistry, solar input, weight and price-per-Wh. EcoFlow, Jackery, Bluetti, Anker and more.`;
 ---
 <Base {title} {description}>
   <h1>Portable power station database</h1>

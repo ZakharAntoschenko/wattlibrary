@@ -49,6 +49,15 @@ export function fullName(station) {
   return `${station.brand} ${station.model}`;
 }
 
+// Meta descriptions must stay under 160 chars (Bing rejects longer ones;
+// Google truncates around the same point). Trims at a word boundary.
+export function clampMeta(text, max = 158) {
+  const t = text.replace(/\s+/g, ' ').trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max - 1);
+  return cut.slice(0, cut.lastIndexOf(' ')).replace(/[,;:.\-–—]$/, '') + '…';
+}
+
 // 3 closest-capacity alternatives from other brands.
 export function alternatives(station, all, n = 3) {
   return all
