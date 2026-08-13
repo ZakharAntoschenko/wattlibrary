@@ -3,7 +3,9 @@ import Base from '../../layouts/Base.astro';
 import db from '../../data/power_stations.json';
 import pairsData from '../../data/compare_pairs.json';
 import { fullName, capacityClass, clampMeta } from '../../lib/utils.js';
-import { pairSlug, compareRows, autoVerdict } from '../../lib/compare.js';
+import { pairSlug, compareRows, autoVerdict, relatedPairs } from '../../lib/compare.js';
+
+const bySlug = Object.fromEntries(db.power_stations.map((s) => [s.slug, s]));
 
 export function getStaticPaths() {
   const bySlug = Object.fromEntries(db.power_stations.map((s) => [s.slug, s]));
@@ -22,6 +24,7 @@ const rows = compareRows(a, b);
 const verdict = manualVerdict ? [manualVerdict] : autoVerdict(a, b);
 const aWins = rows.filter((r) => r[3] === 1).length;
 const bWins = rows.filter((r) => r[3] === -1).length;
+const related = relatedPairs(a, b, pairsData.pairs, bySlug);
 
 const title = `${an} vs ${bn}: Specs Compared`;
 const description = clampMeta(
@@ -81,6 +84,22 @@ const schema = {
       <a href={`/power-stations/${b.slug}/`}>{bn} — full specs & runtimes →</a>
     </div>
   </div>
+
+  {related.length > 0 && (
+    <>
+      <h2>Related comparisons</h2>
+      <p class="muted">Other matchups involving these models, and units in the same size class.</p>
+      <div class="grid">
+        {related.map((r) => (
+          <div class="card">
+            <a href={r.url}>{r.label}</a>
+            <p class="sub">{r.sub}</p>
+          </div>
+        ))}
+      </div>
+      <p><a href="/compare/">All head-to-head comparisons →</a></p>
+    </>
+  )}
 
   <div class="disclosure">
     Specifications from manufacturer documentation (<a href={a.brand_product_url} rel="nofollow noopener">{a.brand}</a>, <a href={b.brand_product_url} rel="nofollow noopener">{b.brand}</a>). Launch prices shown; street prices change often — check current pricing before deciding on value.

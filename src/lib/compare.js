@@ -1,8 +1,40 @@
 // Comparison logic: winner detection per metric + auto-generated verdicts.
-import { dollarsPerWh, whPerKg, fullName, effectiveOutput } from './utils.js';
+import { dollarsPerWh, whPerKg, fullName, effectiveOutput, capacityClass } from './utils.js';
 
 export function pairSlug(a, b) {
   return `${a.slug}-vs-${b.slug}`;
+}
+
+// Lateral links between comparison pages. Without these every /compare/ page is a
+// dead end that only points back at its own two products, which leaves the largest
+// group of URLs on the site with no path between them.
+//
+// Tier 1: other pairs featuring one of these two models — the most useful next click.
+// Tier 2: pairs in the same capacity class, to fill out the block.
+// Sorted by slug so the same pair always renders the same list build after build.
+export function relatedPairs(a, b, pairs, bySlug, n = 6) {
+  const self = pairSlug(a, b);
+  const cls = capacityClass(Math.min(a.capacity_wh, b.capacity_wh));
+
+  const all = pairs
+    .map((p) => ({ a: bySlug[p.a], b: bySlug[p.b] }))
+    .filter((p) => p.a && p.b && pairSlug(p.a, p.b) !== self);
+
+  const shares = (p) =>
+    p.a.slug === a.slug || p.b.slug === a.slug || p.a.slug === b.slug || p.b.slug === b.slug;
+
+  const bySlugAsc = (x, y) => pairSlug(x.a, x.b).localeCompare(pairSlug(y.a, y.b));
+
+  const shared = all.filter(shares).sort(bySlugAsc);
+  const sameClass = all
+    .filter((p) => !shares(p) && capacityClass(Math.min(p.a.capacity_wh, p.b.capacity_wh)) === cls)
+    .sort(bySlugAsc);
+
+  return [...shared, ...sameClass].slice(0, n).map((p) => ({
+    url: `/compare/${pairSlug(p.a, p.b)}/`,
+    label: `${fullName(p.a)} vs ${fullName(p.b)}`,
+    sub: `${p.a.capacity_wh.toLocaleString()}Wh vs ${p.b.capacity_wh.toLocaleString()}Wh`,
+  }));
 }
 
 // Rows for the diff table. dir: 1 = higher wins, -1 = lower wins, 0 = no winner.
