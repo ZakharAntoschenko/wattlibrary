@@ -8,7 +8,7 @@ const brands = new Set(stations.map((s) => s.brand)).size;
 const bestValue = [...stations].sort((a, b) => dollarsPerWh(a) - dollarsPerWh(b)).slice(0, 4);
 const newest = [...stations].sort((a, b) => b.release_year - a.release_year).slice(0, 4);
 
-const title = 'WattLibrary — Portable Power Station Specs, Runtimes & Compatibility';
+const title = 'WattLibrary — Portable Power Station Specs & Runtimes';
 const description = `A structured database of ${stations.length} portable power stations: verified capacity, inverter output, chemistry, solar limits and appliance runtimes.`;
 ---
 <Base {title} {description}>

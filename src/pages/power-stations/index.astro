@@ -2,8 +2,23 @@
 import Base from '../../layouts/Base.astro';
 import db from '../../data/power_stations.json';
 import { fullName, dollarsPerWh } from '../../lib/utils.js';
+import pairsData from '../../data/compare_pairs.json';
+import { pairSlug } from '../../lib/compare.js';
 
 const stations = [...db.power_stations].sort((a, b) => a.capacity_wh - b.capacity_wh);
+
+// One head-to-head link per model, so every comparison page is reachable
+// from the catalogue as well as from /compare/.
+const bySlug = Object.fromEntries(db.power_stations.map((s) => [s.slug, s]));
+const firstPairFor = {};
+for (const p of pairsData.pairs) {
+  const a = bySlug[p.a];
+  const b = bySlug[p.b];
+  if (!a || !b) continue;
+  const url = `/compare/${pairSlug(a, b)}/`;
+  firstPairFor[a.slug] ??= { url, other: b };
+  firstPairFor[b.slug] ??= { url, other: a };
+}
 const title = `Compare ${stations.length} Portable Power Stations by Specs`;
 const description = `Filterable database of ${stations.length} power stations: capacity, AC output, chemistry, solar input, weight and price-per-Wh. EcoFlow, Jackery, Bluetti, Anker and more.`;
 ---
@@ -23,7 +38,7 @@ const description = `Filterable database of ${stations.length} power stations: c
 
   <div class="tbl"><div class="tbl-scroll"><table id="db">
     <thead>
-      <tr><th>Model</th><th>Capacity</th><th>AC output</th><th>Chemistry</th><th>Solar in</th><th>Weight</th><th>$/Wh*</th></tr>
+      <tr><th>Model</th><th>Capacity</th><th>AC output</th><th>Chemistry</th><th>Solar in</th><th>Weight</th><th>$/Wh*</th><th>Compare</th></tr>
     </thead>
     <tbody>
       {stations.map((s) => (
@@ -40,6 +55,11 @@ const description = `Filterable database of ${stations.length} power stations: c
           <td>{s.solar_input_w} W</td>
           <td>{s.weight_kg} kg</td>
           <td>${dollarsPerWh(s).toFixed(2)}</td>
+          <td>
+            {firstPairFor[s.slug]
+              ? <a href={firstPairFor[s.slug].url}>vs {fullName(firstPairFor[s.slug].other)}</a>
+              : <span class="muted">—</span>}
+          </td>
         </tr>
       ))}
     </tbody>

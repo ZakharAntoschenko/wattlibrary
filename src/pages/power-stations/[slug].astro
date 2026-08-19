@@ -4,7 +4,7 @@ import db from '../../data/power_stations.json';
 import pairsData from '../../data/compare_pairs.json';
 import {
   APPLIANCES, runtimeHours, formatRuntime, dollarsPerWh, whPerKg,
-  fullName, alternatives, capacityClass, effectiveOutput, clampMeta,
+  fullName, alternatives, sameBrandSiblings, capacityClass, effectiveOutput, clampMeta,
 } from '../../lib/utils.js';
 
 export function getStaticPaths() {
@@ -18,6 +18,7 @@ const { station: s } = Astro.props;
 const all = db.power_stations;
 const name = fullName(s);
 const alts = alternatives(s, all);
+const siblings = sameBrandSiblings(s, all);
 const fridgeRt = formatRuntime(runtimeHours(s, 150));
 const cpapNights = runtimeHours(s, 40) ? (runtimeHours(s, 40) / 8).toFixed(1) : null;
 
@@ -29,7 +30,7 @@ const comparisons = pairsData.pairs
     other: bySlug[p.a === s.slug ? p.b : p.a],
   }));
 
-const title = `${name} Specs & Runtimes (${s.release_year})`;
+const title = `${name} Specs & Runtimes (${s.capacity_wh}Wh)`;
 const description = clampMeta(
   `${name}: ${s.capacity_wh}Wh ${s.chemistry}, ${s.ac_output_w}W AC out, ${s.solar_input_w}W solar in. Full specs, runtimes for 12 appliances and closest alternatives.`
 );
@@ -68,15 +69,6 @@ const schema = {
       brand: { '@type': 'Brand', name: s.brand },
       description,
       url: new URL(Astro.url.pathname, Astro.site).href,
-      offers: { '@type': 'Offer', price: s.msrp_usd, priceCurrency: 'USD' },
-    },
-    {
-      '@type': 'FAQPage',
-      mainEntity: faq.map((f) => ({
-        '@type': 'Question',
-        name: f.q,
-        acceptedAnswer: { '@type': 'Answer', text: f.a },
-      })),
     },
     {
       '@type': 'BreadcrumbList',
@@ -151,6 +143,20 @@ const schema = {
       </div>
     ))}
   </div>
+
+  {siblings.length > 0 && (
+    <>
+      <h2>Other {s.brand} models</h2>
+      <div class="grid">
+        {siblings.map((sb) => (
+          <div class="card">
+            <a href={`/power-stations/${sb.slug}/`}>{fullName(sb)} specs and runtimes</a>
+            <p class="sub">{sb.capacity_wh.toLocaleString()}Wh · {sb.ac_output_w.toLocaleString()}W · {sb.chemistry}</p>
+          </div>
+        ))}
+      </div>
+    </>
+  )}
 
   {comparisons.length > 0 && (
     <>

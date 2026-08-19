@@ -70,6 +70,19 @@ export function alternatives(station, all, n = 3) {
     .slice(0, n);
 }
 
+// Closest-capacity models from the SAME brand. Complements alternatives(),
+// which deliberately only returns other brands.
+export function sameBrandSiblings(station, all, n = 3) {
+  return all
+    .filter((s) => s.slug !== station.slug && s.brand === station.brand)
+    .sort(
+      (a, b) =>
+        Math.abs(a.capacity_wh - station.capacity_wh) -
+        Math.abs(b.capacity_wh - station.capacity_wh)
+    )
+    .slice(0, n);
+}
+
 export function capacityClass(wh) {
   if (wh < 500) return 'Small (under 500Wh)';
   if (wh < 1500) return 'Mid-size (500–1,500Wh)';
