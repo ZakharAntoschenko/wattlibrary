@@ -1,0 +1,40 @@
+name: IndexNow
+
+# Bing's own recommendation ("IndexNow not configured", High). Fires after the
+# push that Cloudflare Pages deploys from, waits for the new build to go live,
+# then submits only the URLs that push actually changed.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'astro.config.mjs'
+  workflow_dispatch:
+    inputs:
+      all:
+        description: 'Submit every URL on the site instead of the changed ones'
+        type: boolean
+        default: false
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the script diffs against the previous commit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Submit URLs to IndexNow
+        run: |
+          if [ "${{ inputs.all }}" = "true" ]; then
+            node scripts/indexnow.mjs --all
+          else
+            node scripts/indexnow.mjs --base "${{ github.event.before }}"
+          fi

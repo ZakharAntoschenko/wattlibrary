@@ -1,7 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import db from '../../data/power_stations.json';
-import { fullName, dollarsPerWh } from '../../lib/utils.js';
+import { fullName, dollarsPerWh, metaFromParts } from '../../lib/utils.js';
 import pairsData from '../../data/compare_pairs.json';
 import { pairSlug } from '../../lib/compare.js';
 
@@ -19,8 +19,16 @@ for (const p of pairsData.pairs) {
   firstPairFor[a.slug] ??= { url, other: b };
   firstPairFor[b.slug] ??= { url, other: a };
 }
-const title = `Compare ${stations.length} Portable Power Stations by Specs`;
-const description = `Filterable database of ${stations.length} power stations: capacity, AC output, chemistry, solar input, weight and price-per-Wh. EcoFlow, Jackery, Bluetti, Anker and more.`;
+const whMin = Math.min(...stations.map((s) => s.capacity_wh));
+const whMax = Math.max(...stations.map((s) => s.capacity_wh));
+const wMax = Math.max(...stations.map((s) => s.ac_output_w));
+const brandList = [...new Set(stations.map((s) => s.brand))];
+
+const title = `Compare ${stations.length} Portable Power Stations: ${whMin}–${whMax.toLocaleString()}Wh`;
+const description = metaFromParts([
+  `All ${stations.length} models side by side: ${whMin}–${whMax.toLocaleString()}Wh, up to ${wMax.toLocaleString()}W AC, LiFePO4 vs NMC, solar input, weight and $/Wh.`,
+  `${brandList.slice(0, 4).join(', ')} and more.`,
+]);
 ---
 <Base {title} {description}>
   <h1>Portable power station database</h1>

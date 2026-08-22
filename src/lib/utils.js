@@ -58,6 +58,58 @@ export function clampMeta(text, max = 158) {
   return cut.slice(0, cut.lastIndexOf(' ')).replace(/[,;:.\-–—]$/, '') + '…';
 }
 
+// Builds a meta description out of ranked sentences: keeps adding them while
+// the result still fits, so the number a searcher typed survives the truncation
+// and the boilerplate tail is what gets dropped.
+export function metaFromParts(parts, max = 158) {
+  let out = '';
+  for (const part of parts.filter(Boolean)) {
+    const next = out ? `${out} ${part}` : part;
+    if (next.length > max) break;
+    out = next;
+  }
+  return out || clampMeta(parts.filter(Boolean)[0] ?? '', max);
+}
+
+// Two appliances this unit can actually run, heaviest first, for the
+// "runs a 150W fridge ~1.5 h" line in meta descriptions. Short labels and
+// short units on purpose: every character saved here is one the snippet can
+// spend on another number.
+const META_LABELS = {
+  fridge: 'fridge',
+  laptop: 'laptop',
+  cpap: 'CPAP',
+  'wifi-router': 'router',
+  'mini-fridge': 'mini fridge',
+  tv: 'TV',
+};
+
+function shortRuntime(hours) {
+  return formatRuntime(hours).replace(/ hours?$/, ' h').replace(/ minutes$/, ' min');
+}
+
+export function headlineRuntimes(station, slugs = ['fridge', 'laptop', 'cpap', 'wifi-router']) {
+  const out = [];
+  for (const slug of slugs) {
+    const a = APPLIANCES.find((x) => x.slug === slug);
+    const h = a && runtimeHours(station, a.watts);
+    if (h) out.push({ name: META_LABELS[slug] ?? a.name.toLowerCase(), watts: a.watts, text: shortRuntime(h) });
+    if (out.length === 2) break;
+  }
+  return out;
+}
+
+// Titles get cut around 60 characters in both Google and Bing, and the model
+// names here run long. Take the most informative variant that survives intact.
+export function pickTitle(candidates, max = 60) {
+  const list = candidates.filter(Boolean);
+  return list.find((c) => c.length <= max) ?? list[list.length - 1];
+}
+
+export function chemistryLabel(station) {
+  return station.chemistry === 'LFP' ? 'LiFePO4' : 'NMC lithium';
+}
+
 // 3 closest-capacity alternatives from other brands.
 export function alternatives(station, all, n = 3) {
   return all

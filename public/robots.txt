@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Both lines are deliberate. Bing's sitemap parser counted the nested
+# sitemap-index.xml as a single URL instead of resolving the child it points
+# to, so the child file is declared directly as well.
 Sitemap: https://wattlibrary.com/sitemap-index.xml
+Sitemap: https://wattlibrary.com/sitemap-0.xml

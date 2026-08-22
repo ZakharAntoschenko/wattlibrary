@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import db from '../../data/power_stations.json';
 import pairsData from '../../data/compare_pairs.json';
-import { fullName, capacityClass, clampMeta } from '../../lib/utils.js';
+import { fullName, capacityClass, metaFromParts, pickTitle } from '../../lib/utils.js';
 import { pairSlug, compareRows, autoVerdict, relatedPairs } from '../../lib/compare.js';
 
 const bySlug = Object.fromEntries(db.power_stations.map((s) => [s.slug, s]));
@@ -26,10 +26,20 @@ const aWins = rows.filter((r) => r[3] === 1).length;
 const bWins = rows.filter((r) => r[3] === -1).length;
 const related = relatedPairs(a, b, pairsData.pairs, bySlug);
 
-const title = `${an} vs ${bn}: Specs Compared`;
-const description = clampMeta(
-  `${an} (${a.capacity_wh}Wh/${a.ac_output_w}W) vs ${bn} (${b.capacity_wh}Wh/${b.ac_output_w}W): chemistry, cycle life, solar input, UPS and value, side by side.`
-);
+// The snippet carries the two capacities and the row score, so the result
+// answers "which one" before the click instead of promising a table.
+const leader = aWins === bWins ? null : aWins > bWins ? an : bn;
+const title = pickTitle([
+  `${an} vs ${bn}: ${a.capacity_wh.toLocaleString()} vs ${b.capacity_wh.toLocaleString()}Wh`,
+  `${an} vs ${bn}`,
+]);
+const description = metaFromParts([
+  `${an} ${a.capacity_wh.toLocaleString()}Wh/${a.ac_output_w.toLocaleString()}W vs ${bn} ${b.capacity_wh.toLocaleString()}Wh/${b.ac_output_w.toLocaleString()}W.`,
+  leader
+    ? `${leader} wins ${Math.max(aWins, bWins)} of ${rows.length} spec rows.`
+    : `Even on spec rows (${aWins}–${bWins}).`,
+  'Chemistry, cycle life, solar, UPS and price per Wh, side by side.',
+]);
 
 const schema = {
   '@context': 'https://schema.org',
