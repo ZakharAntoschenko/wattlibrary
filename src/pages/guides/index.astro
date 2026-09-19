@@ -1,0 +1,55 @@
+---
+import Base from '../../layouts/Base.astro';
+import db from '../../data/power_stations.json';
+import { metaFromParts } from '../../lib/utils.js';
+
+const count = db.power_stations.length;
+
+const guides = [
+  {
+    url: '/guides/power-station-for-cpap/',
+    title: 'How long will a power station run a CPAP?',
+    blurb: `Nights of backup for all ${count} models, with the humidifier on and off, and on AC against a 12V DC cord.`,
+  },
+  {
+    url: '/guides/power-station-for-refrigerator/',
+    title: 'How long will a power station run a refrigerator?',
+    blurb: 'Which models can start a compressor at all, and how long they feed one once the duty cycle is accounted for.',
+  },
+];
+
+const title = 'Power Station Guides: Runtimes for Real Appliances';
+const description = metaFromParts([
+  `Worked runtime guides built from the specifications of ${count} power stations:`,
+  'CPAP machines and refrigerators, with the arithmetic shown.',
+]);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'ItemList',
+      name: title,
+      itemListElement: guides.map((g, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: g.title,
+        url: new URL(g.url, Astro.site).href,
+      })),
+    },
+  ],
+};
+---
+<Base {title} {description} {schema}>
+  <h1>Guides</h1>
+  <p class="lead">A spec sheet tells you a pack holds 1,024Wh. It does not tell you whether that is one night of CPAP or three, or whether the unit can start your fridge at all. These guides do the arithmetic across the whole database and show the assumptions behind it.</p>
+
+  {guides.map((g) => (
+    <>
+      <h2><a href={g.url}>{g.title}</a></h2>
+      <p>{g.blurb}</p>
+    </>
+  ))}
+
+  <p class="muted">More to come. If there is an appliance you want the numbers for, the <a href="/power-stations/">database</a> has the runtime table for twelve common loads on every model.</p>
+</Base>

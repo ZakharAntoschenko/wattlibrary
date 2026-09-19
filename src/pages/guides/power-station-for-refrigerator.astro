@@ -1,0 +1,161 @@
+---
+import Base from '../../layouts/Base.astro';
+import db from '../../data/power_stations.json';
+import { fullName, metaFromParts, pickTitle, effectiveOutput, dollarsPerWh } from '../../lib/utils.js';
+import { FRIDGE_LOADS, hoursOnLoad, canStart, formatSpan } from '../../lib/guides.js';
+
+const stations = [...db.power_stations].sort((a, b) => a.capacity_wh - b.capacity_wh);
+const full = FRIDGE_LOADS.find((l) => l.key === 'full');
+
+const rows = stations.map((s) => ({
+  s,
+  starts: Object.fromEntries(FRIDGE_LOADS.map((l) => [l.key, canStart(s, l)])),
+  hours: Object.fromEntries(FRIDGE_LOADS.map((l) => [l.key, hoursOnLoad(s, l.average_w)])),
+}));
+
+const cannotStart = rows.filter((r) => !r.starts.full);
+const dayLong = rows.filter((r) => r.starts.full && r.hours.full >= 24);
+const twoDay = rows.filter((r) => r.starts.full && r.hours.full >= 48);
+const cheapestDay = [...dayLong].sort((a, b) => a.s.msrp_usd - b.s.msrp_usd)[0];
+const smallestStarter = rows.find((r) => r.starts.full);
+
+const title = pickTitle([
+  'Power Station for a Refrigerator: 26 Models Compared',
+  'Power Station for a Refrigerator: Runtime by Model',
+]);
+const description = metaFromParts([
+  'A full-size fridge averages about 60W over a day, not the 150W on its plate.',
+  `Which of 26 power stations can start one, and for how long: ${dayLong.length} clear 24 hours.`,
+]);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      headline: 'How long will a power station run a refrigerator?',
+      description,
+      url: new URL(Astro.url.pathname, Astro.site).href,
+      author: { '@type': 'Organization', name: 'WattLibrary' },
+      publisher: { '@type': 'Organization', name: 'WattLibrary' },
+      datePublished: '2026-09-19',
+      dateModified: '2026-09-19',
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Guides', item: new URL('/guides/', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: 'Power station for a refrigerator' },
+      ],
+    },
+  ],
+};
+
+const faq = [
+  {
+    q: 'How many watts does a refrigerator really use?',
+    a: 'Two different numbers, and mixing them up is what produces wrong runtimes. While the compressor runs, a full-size fridge pulls 100–200W; averaged over a day it is closer to 40–75W, because the compressor only runs about a third of the time. Take the kWh/year figure off the EnergyGuide label and divide by 8,760 to get your own fridge’s average.',
+  },
+  {
+    q: 'Why does my power station trip when the fridge kicks in?',
+    a: 'Startup surge. A compressor draws two to three times its running wattage for a second or two at every restart, so a fridge that runs at 150W can demand 600–900W the instant it starts. A station whose surge rating sits below that will fault even though the running load fits comfortably.',
+  },
+  {
+    q: 'Can I run a fridge and other things at the same time?',
+    a: 'Watch the surge, not the average. Leave headroom above your other loads for the compressor’s restart — if a kettle and the fridge coincide on a small unit, the fridge is what trips it.',
+  },
+  {
+    q: 'Should I run the fridge continuously during an outage?',
+    a: 'Usually not. A closed fridge holds temperature for about four hours and a full freezer for a day or more, so running the pack in bursts — an hour or two every few hours — stretches the same battery much further than leaving it plugged in the whole time. Door discipline does more than capacity.',
+  },
+  {
+    q: 'Does a solar panel change the picture?',
+    a: 'It changes it more here than anywhere else, because a fridge is a small steady load and a panel is a small steady supply. A few hundred watts of panel in decent sun covers a full-size fridge’s average draw outright and turns a one-day pack into an indefinite one, as long as the sun keeps coming back.',
+  },
+];
+---
+<Base {title} {description} {schema}>
+  <nav class="crumbs"><a href="/guides/">Guides</a> › Power station for a refrigerator</nav>
+  <h1>How long will a power station run a refrigerator?</h1>
+  <p class="lead">Two numbers decide this, and most runtime tables only use the wrong one. A fridge has to be <em>started</em>, which is a surge problem, and then <em>fed</em>, which is an average-draw problem. Here is where all {stations.length} models land on both.</p>
+
+  <div class="kpis">
+    <div class="kpi"><b>{full.average_w} W</b> full-size fridge, 24h average</div>
+    <div class="kpi"><b>{full.running_w} W</b> while the compressor runs</div>
+    <div class="kpi"><b>{full.surge_w} W</b> needed at startup</div>
+    <div class="kpi"><b>{dayLong.length} of {stations.length}</b> clear a full day</div>
+  </div>
+
+  <h2>Why the usual arithmetic is wrong by about three times</h2>
+  <p>The number on the back of a fridge, and the one most calculators use, is what it draws while the compressor is actually running. The compressor is not running most of the time: it cycles to hold a temperature, and over a day it works roughly a third of the hours. That is why a fridge with 150W on the plate shows up on its EnergyGuide label as something like 500 kWh a year — divide by the 8,760 hours in a year and the honest average is about 57W.</p>
+  <p>Feed the plate figure into a runtime calculation and you get an answer roughly three times too pessimistic. Feed in the average and forget the surge, and you get a unit that cannot start the thing at all. The table below keeps the two apart.</p>
+
+  <div class="note"><b>Our own model pages are deliberately conservative.</b> The runtime tables on each station use a continuous 150W for a full-size refrigerator, which is the worst case rather than the expected one. This page uses the duty-cycled average instead — both numbers are honest, they just answer different questions.</div>
+
+  <h2>Every model, started and fed</h2>
+  <p class="muted">Runtime at the 24-hour average draw: {FRIDGE_LOADS.map((l) => `${l.label.toLowerCase()} ${l.average_w}W`).join(', ')}. "Starts it?" compares the station's surge rating against the compressor's inrush.</p>
+
+  <div class="tbl"><div class="tbl-scroll"><table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Capacity</th>
+        <th>Surge</th>
+        <th>Starts a full-size fridge?</th>
+        {FRIDGE_LOADS.map((l) => <th>{l.label}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr>
+          <td><a href={`/power-stations/${r.s.slug}/`}>{fullName(r.s)}</a></td>
+          <td>{r.s.capacity_wh.toLocaleString()} Wh</td>
+          <td>{r.s.ac_surge_w.toLocaleString()} W</td>
+          <td>{r.starts.full ? 'Yes' : 'No'}</td>
+          {FRIDGE_LOADS.map((l) => (
+            <td>{r.starts[l.key] ? formatSpan(r.hours[l.key]) : '—'}</td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table></div></div>
+
+  {cannotStart.length > 0 && (
+    <p><b>The ones that cannot:</b> {cannotStart.map((r, i) => (
+      <>{i > 0 ? ', ' : ''}<a href={`/power-stations/${r.s.slug}/`}>{fullName(r.s)}</a> ({r.s.ac_surge_w.toLocaleString()}W surge)</>
+    ))}. Each of them will run a mini fridge; none has the headroom for a full-size compressor, whatever its watt-hours suggest.</p>
+  )}
+
+  <h2>Sizing for an actual outage</h2>
+  <ul>
+    <li><b>An evening, four to six hours.</b> Anything that clears the surge test above. At {full.average_w}W average you are spending roughly {full.average_w * 5}Wh.</li>
+    <li><b>A full day.</b> {dayLong.length} models manage 24 hours on the fridge alone{cheapestDay ? <>, the cheapest of them the <a href={`/power-stations/${cheapestDay.s.slug}/`}>{fullName(cheapestDay.s)}</a> at ${cheapestDay.s.msrp_usd.toLocaleString()} (${dollarsPerWh(cheapestDay.s).toFixed(2)}/Wh)</> : null}.</li>
+    <li><b>Two days or more.</b> {twoDay.length > 0 ? <>Only {twoDay.length} models: {twoDay.map((r, i) => (<>{i > 0 ? ', ' : ''}<a href={`/power-stations/${r.s.slug}/`}>{fullName(r.s)}</a></>))}. Below that capacity, add solar instead of battery.</> : 'No model here manages it on battery alone — this is where solar input stops being optional.'}</li>
+  </ul>
+  {smallestStarter && (
+    <p>The smallest unit in the database that can start a full-size fridge at all is the <a href={`/power-stations/${smallestStarter.s.slug}/`}>{fullName(smallestStarter.s)}</a>: {smallestStarter.s.capacity_wh.toLocaleString()}Wh, {smallestStarter.s.ac_surge_w.toLocaleString()}W surge, {formatSpan(smallestStarter.hours.full)} of fridge.</p>
+  )}
+
+  <h2>Three ways this goes wrong in practice</h2>
+  <h3>The duty cycle is not a constant</h3>
+  <p>A third of the time is a kitchen in normal conditions. A hot room, a full load of warm groceries, or a door opened every ten minutes pushes the compressor towards half the time or more, and the runtimes above drop with it.</p>
+  <h3>The surge is not on the spec sheet you are reading</h3>
+  <p>Fridge manufacturers rarely print inrush current. Two to three times running watts is the working assumption; older compressors and cheap chest freezers can be worse. If a unit is borderline in the table above, treat it as a no.</p>
+  <h3>The station spends power on itself</h3>
+  <p>Inverter, display and fans keep drawing while the compressor rests, and on a day-long run that overhead is not a rounding error. It is also why running the fridge in bursts beats leaving everything on: you switch off the station's own consumption along with the fridge's.</p>
+
+  <h2>How we calculated this</h2>
+  <p>Capacity × 85% inverter efficiency ÷ average draw. Average draws are the middle of the published ranges for each appliance class, and the start test compares the station's rated surge against two to three times the appliance's running wattage. These are estimates from specifications rather than measurements on a bench — your fridge's EnergyGuide label will beat our average every time, and it is the number worth using.</p>
+
+  <h2>FAQ</h2>
+  {faq.map((f) => (
+    <details class="faq">
+      <summary>{f.q}</summary>
+      <div>{f.a}</div>
+    </details>
+  ))}
+
+  <div class="disclosure">
+    Appliance figures compiled from manufacturer documentation and EnergyGuide labelling; station specifications come from each manufacturer's own documentation — see the <a href="/power-stations/">database</a> and <a href="/about/">methodology</a>. Spotted an error? We correct listings within 24 hours.
+  </div>
+</Base>

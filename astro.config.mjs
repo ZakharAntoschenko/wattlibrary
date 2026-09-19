@@ -27,9 +27,14 @@ const PAIRS = ['src/data/compare_pairs.json', 'src/lib/compare.js'];
 
 const at = (...paths) => lastCommit([...SHARED, ...paths]) ?? buildTime;
 
+const GUIDES = ['src/lib/guides.js'];
+
 const LASTMOD = {
   home: at('src/pages/index.astro', ...STATIONS),
   about: at('src/pages/about.astro'),
+  guideIndex: at('src/pages/guides/index.astro', ...STATIONS),
+  guideCpap: at('src/pages/guides/power-station-for-cpap.astro', ...STATIONS, ...GUIDES),
+  guideFridge: at('src/pages/guides/power-station-for-refrigerator.astro', ...STATIONS, ...GUIDES),
   catalogue: at('src/pages/power-stations/index.astro', ...STATIONS, ...PAIRS),
   model: at('src/pages/power-stations/[slug].astro', ...STATIONS, ...PAIRS),
   compareIndex: at('src/pages/compare/index.astro', ...STATIONS, ...PAIRS),
@@ -42,6 +47,9 @@ function lastmodFor(url) {
   if (path === '/about/') return LASTMOD.about;
   if (path === '/power-stations/') return LASTMOD.catalogue;
   if (path.startsWith('/power-stations/')) return LASTMOD.model;
+  if (path === '/guides/') return LASTMOD.guideIndex;
+  if (path === '/guides/power-station-for-cpap/') return LASTMOD.guideCpap;
+  if (path === '/guides/power-station-for-refrigerator/') return LASTMOD.guideFridge;
   if (path === '/compare/') return LASTMOD.compareIndex;
   if (path.startsWith('/compare/')) return LASTMOD.comparePair;
   return buildTime;
