@@ -6,7 +6,9 @@ import {
   APPLIANCES, runtimeHours, formatRuntime, dollarsPerWh, whPerKg,
   fullName, alternatives, sameBrandSiblings, capacityClass, effectiveOutput,
   metaFromParts, headlineRuntimes, chemistryLabel, pickTitle,
+  applianceRuntime, canStart, COMPRESSOR_LOADS, GUIDE_URLS,
 } from '../../lib/utils.js';
+import { CPAP_LOADS, CPAP_HOURS_PER_NIGHT, nightsOfCpap, formatNights } from '../../lib/guides.js';
 
 export function getStaticPaths() {
   return db.power_stations.map((station) => ({
@@ -20,8 +22,16 @@ const all = db.power_stations;
 const name = fullName(s);
 const alts = alternatives(s, all);
 const siblings = sameBrandSiblings(s, all);
-const fridgeRt = formatRuntime(runtimeHours(s, 150));
-const cpapNights = runtimeHours(s, 40) ? (runtimeHours(s, 40) / 8).toFixed(1) : null;
+// Fridge and CPAP numbers come from the same helpers as the guides, so the
+// card and /guides/ always quote the same runtime for the same model.
+const fullFridge = COMPRESSOR_LOADS.find((l) => l.key === 'full');
+const miniFridge = COMPRESSOR_LOADS.find((l) => l.key === 'mini');
+const fridgeRt = canStart(s, fullFridge) ? formatRuntime(runtimeHours(s, fullFridge.average_w)) : null;
+const miniRt = canStart(s, miniFridge) ? formatRuntime(runtimeHours(s, miniFridge.average_w)) : null;
+const cpapLoad = (key) => CPAP_LOADS.find((l) => l.key === key);
+const cpapNights = formatNights(nightsOfCpap(s, cpapLoad('ac')));
+const cpapNightsDc = formatNights(nightsOfCpap(s, cpapLoad('dc')));
+const cpapNightsHumid = formatNights(nightsOfCpap(s, cpapLoad('humid')));
 
 const bySlug = Object.fromEntries(all.map((x) => [x.slug, x]));
 const comparisons = pairsData.pairs
@@ -47,23 +57,31 @@ const chargeText = chargeMin ? (chargeMin >= 90 ? `${+(chargeMin / 60).toFixed(1
 
 const rt = headlineRuntimes(s);
 const runtimeLine = rt.length
-  ? `Runs a ${rt[0].watts}W ${rt[0].name} ~${rt[0].text}${rt[1] ? `, a ${rt[1].watts}W ${rt[1].name} ~${rt[1].text}` : ''}.`
+  ? `Runs ${rt[0].phrase} ~${rt[0].text}${rt[1] ? `, ${rt[1].phrase} ~${rt[1].text}` : ''}.`
   : null;
 const description = metaFromParts([
   `${name}: ${wh}Wh ${chemistryLabel(s)}, ${acw}W AC${s.boost_mode_w ? ` (${s.boost_mode_w.toLocaleString()}W boost)` : ''}.`,
   runtimeLine,
   chargeText ? `0–80% in ${chargeText}.` : null,
   `${s.solar_input_w.toLocaleString()}W solar in.`,
-  'Full spec table + 12 appliance runtimes.',
+  `Full spec table + ${APPLIANCES.length} appliance runtimes.`,
 ]);
 
 const faq = [
   {
     q: `How long will the ${name} run a refrigerator?`,
     a: fridgeRt
-      ? `Around ${fridgeRt} for a full-size refrigerator averaging 150W, assuming ~85% inverter efficiency. Actual runtime depends on the fridge's compressor duty cycle and ambient temperature.`
-      : `A full-size refrigerator's compressor surge may exceed this unit's ${s.ac_output_w}W output — check the fridge's rated and surge wattage first.`,
+      ? `About ${fridgeRt} on a full-size refrigerator. A fridge's compressor pulls around ${fullFridge.running_w}W while it runs but only runs about a third of the time, so the pack sees a 24-hour average of roughly ${fullFridge.average_w}W (at ~85% inverter efficiency). The ${s.ac_surge_w.toLocaleString()}W surge rating covers the ~${fullFridge.surge_w}W a compressor asks for at each restart. For your own fridge, divide the kWh/year on its EnergyGuide label by 8,760.`
+      : `Probably not a full-size one. A fridge compressor asks for roughly ${fullFridge.surge_w}W for a second or two at every restart, above this unit's ${s.ac_surge_w.toLocaleString()}W surge rating, so it is likely to trip whatever its capacity.${miniRt ? ` It can run a mini fridge for about ${miniRt}.` : ''}`,
+    link: { href: GUIDE_URLS.fridge, text: `Fridge runtimes for all ${all.length} models` },
   },
+  ...(cpapNights
+    ? [{
+        q: `How many nights will the ${name} run a CPAP?`,
+        a: `About ${cpapNights} nights from the AC outlet at ${cpapLoad('ac').watts}W with the humidifier off (${CPAP_HOURS_PER_NIGHT} hours a night), or ${cpapNightsDc} from the 12V DC outlet, which skips the inverter. A heated humidifier and tube push the draw to around ${cpapLoad('humid').watts}W${cpapNightsHumid ? ` and cut that to ${cpapNightsHumid} nights` : ''}.`,
+        link: { href: GUIDE_URLS.cpap, text: `CPAP nights for all ${all.length} models` },
+      }]
+    : []),
   {
     q: `Does the ${name} use a LiFePO4 battery?`,
     a: s.chemistry === 'LFP'
@@ -138,23 +156,28 @@ const schema = {
   </table></div></div>
 
   <h2>What can it run, and for how long?</h2>
-  <p class="muted">Estimates assume ~85% inverter efficiency and average running wattage. Motor-driven appliances also need surge headroom.</p>
+  <p class="muted">Capacity × 85% inverter efficiency ÷ average draw. Fridges and freezers use their 24-hour average — the compressor only runs about a third of the time — and count only if this unit's surge rating can restart the compressor. Estimates from specifications, not bench measurements.</p>
   <div class="tbl"><div class="tbl-scroll"><table>
     <thead><tr><th>Appliance</th><th>Typical draw</th><th>Estimated runtime</th></tr></thead>
     <tbody>
       {APPLIANCES.map((a) => {
-        const rt = runtimeHours(s, a.watts);
+        const { hours, reason } = applianceRuntime(s, a);
         return (
           <tr>
-            <td>{a.name}</td>
-            <td>{a.watts} W</td>
-            <td>{rt !== null ? formatRuntime(rt) : <span class="muted">Exceeds {effectiveOutput(s).toLocaleString()}W output</span>}</td>
+            <td>{a.guide ? <a href={a.guide}>{a.name}</a> : a.name}</td>
+            <td>{a.load ? <>{a.watts} W avg <span class="muted">· ~{a.load.surge_w.toLocaleString()} W to start</span></> : `${a.watts} W`}</td>
+            <td>{hours !== null
+              ? formatRuntime(hours)
+              : reason === 'surge'
+                ? <span class="muted">Can't start it ({s.ac_surge_w.toLocaleString()}W surge)</span>
+                : <span class="muted">Exceeds {effectiveOutput(s).toLocaleString()}W output</span>}</td>
           </tr>
         );
       })}
     </tbody>
   </table></div></div>
-  {cpapNights && <p>For CPAP users: that's roughly <b>{cpapNights} nights</b> of sleep (8h/night, humidifier off).</p>}
+  {cpapNights && <p>For CPAP users: that's roughly <b>{cpapNights} nights</b> of sleep (8h/night, humidifier off, AC outlet){cpapNightsDc && <>, or <b>{cpapNightsDc}</b> from the 12V DC outlet</>}.</p>}
+  <p>Sizing for one appliance across all {all.length} models: <a href={GUIDE_URLS.cpap}>power station for a CPAP</a> · <a href={GUIDE_URLS.fridge}>power station for a refrigerator</a>.</p>
 
   <h2>Closest alternatives</h2>
   <div class="grid">
@@ -197,7 +220,7 @@ const schema = {
   {faq.map((f) => (
     <details class="faq">
       <summary>{f.q}</summary>
-      <div>{f.a}</div>
+      <div>{f.a}{f.link && <> <a href={f.link.href}>{f.link.text} →</a></>}</div>
     </details>
   ))}
 

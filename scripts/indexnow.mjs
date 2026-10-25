@@ -45,7 +45,8 @@ const pairs = JSON.parse(readFileSync(join(ROOT, 'src/data/compare_pairs.json'),
 const MODEL_URLS = stations.map((s) => `${ORIGIN}/power-stations/${s.slug}/`);
 const PAIR_URLS = pairs.map((p) => `${ORIGIN}/compare/${p.a}-vs-${p.b}/`);
 const STATIC_URLS = [`${ORIGIN}/`, `${ORIGIN}/about/`, `${ORIGIN}/power-stations/`, `${ORIGIN}/compare/`];
-const ALL_URLS = [...STATIC_URLS, ...MODEL_URLS, ...PAIR_URLS];
+const GUIDE_URLS = ['', 'power-station-for-cpap/', 'power-station-for-refrigerator/'].map((p) => `${ORIGIN}/guides/${p}`);
+const ALL_URLS = [...STATIC_URLS, ...GUIDE_URLS, ...MODEL_URLS, ...PAIR_URLS];
 
 // Which URLs a changed source file can affect. Anything shared (layout, helpers,
 // data, config) invalidates the whole site, which is correct and still cheap.
@@ -59,6 +60,7 @@ const RULES = [
   [/^src\/pages\/power-stations\/index\.astro$/, () => [`${ORIGIN}/power-stations/`]],
   [/^src\/pages\/power-stations\/\[slug\]\.astro$/, () => MODEL_URLS],
   [/^src\/pages\/compare\/index\.astro$/, () => [`${ORIGIN}/compare/`]],
+  [/^src\/pages\/guides\//, () => GUIDE_URLS],
   [/^src\/pages\/compare\/\[pair\]\.astro$/, () => PAIR_URLS],
   [/^src\/pages\/404\.astro$/, () => []], // never worth submitting
   [/^public\//, () => []], // assets, robots, key file — not indexable pages

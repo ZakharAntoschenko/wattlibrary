@@ -1,5 +1,5 @@
 {
-  "note": "Pairs for /compare/. Order [a, b] fixes the canonical URL a-vs-b. Optional 'verdict' field overrides the auto-generated verdict with hand-written text.",
+  "note": "Pairs for /compare/. Order [a, b] fixes the canonical URL a-vs-b. Optional 'verdict' field overrides the auto-generated verdict with hand-written text. Only pairs with \"index\": true are indexable and listed in the sitemap; the rest render normally for visitors but carry noindex, follow. The eight indexable ones are the pairs Google had already indexed as of 25.10.2026; a template comparison without its own verdict should not be added to the index.",
   "pairs": [
     {
       "a": "ecoflow-river-3",
@@ -23,7 +23,8 @@
     },
     {
       "a": "ecoflow-delta-3-plus",
-      "b": "anker-solix-c1000"
+      "b": "anker-solix-c1000",
+      "index": true
     },
     {
       "a": "ecoflow-delta-3-plus",
@@ -39,11 +40,13 @@
     },
     {
       "a": "ecoflow-delta-3-plus",
-      "b": "bluetti-ac180"
+      "b": "bluetti-ac180",
+      "index": true
     },
     {
       "a": "ecoflow-delta-2",
-      "b": "anker-solix-c1000"
+      "b": "anker-solix-c1000",
+      "index": true
     },
     {
       "a": "ecoflow-delta-2",
@@ -51,7 +54,8 @@
     },
     {
       "a": "ecoflow-delta-2",
-      "b": "bluetti-ac180"
+      "b": "bluetti-ac180",
+      "index": true
     },
     {
       "a": "jackery-explorer-1000-v2",
@@ -67,11 +71,13 @@
     },
     {
       "a": "dji-power-1000",
-      "b": "ecoflow-delta-3-plus"
+      "b": "ecoflow-delta-3-plus",
+      "index": true
     },
     {
       "a": "dji-power-1000",
-      "b": "anker-solix-c1000"
+      "b": "anker-solix-c1000",
+      "index": true
     },
     {
       "a": "ecoflow-delta-2-max",
@@ -83,7 +89,8 @@
     },
     {
       "a": "bluetti-elite-200-v2",
-      "b": "bluetti-ac200l"
+      "b": "bluetti-ac200l",
+      "index": true
     },
     {
       "a": "jackery-explorer-2000-plus",
@@ -111,7 +118,8 @@
     },
     {
       "a": "jackery-explorer-3000-pro",
-      "b": "ecoflow-delta-pro"
+      "b": "ecoflow-delta-pro",
+      "index": true
     }
   ]
 }

@@ -13,11 +13,11 @@ export function getStaticPaths() {
     const a = bySlug[p.a];
     const b = bySlug[p.b];
     if (!a || !b) throw new Error(`Unknown slug in compare_pairs.json: ${p.a} / ${p.b}`);
-    return { params: { pair: pairSlug(a, b) }, props: { a, b, manualVerdict: p.verdict ?? null } };
+    return { params: { pair: pairSlug(a, b) }, props: { a, b, manualVerdict: p.verdict ?? null, indexable: p.index === true } };
   });
 }
 
-const { a, b, manualVerdict } = Astro.props;
+const { a, b, manualVerdict, indexable } = Astro.props;
 const an = fullName(a);
 const bn = fullName(b);
 const rows = compareRows(a, b);
@@ -56,7 +56,7 @@ const schema = {
   ],
 };
 ---
-<Base {title} {description} {schema}>
+<Base {title} {description} {schema} noindex={!indexable}>
   <nav class="crumbs"><a href="/compare/">Comparisons</a> › {an} vs {bn}</nav>
   <h1>{an} vs {bn}</h1>
   <p class="muted">{capacityClass(a.capacity_wh)}{capacityClass(a.capacity_wh) !== capacityClass(b.capacity_wh) ? ` vs ${capacityClass(b.capacity_wh)}` : ''} · spec-by-spec, winner marked per row</p>

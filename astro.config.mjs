@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 // lastmod is only useful to Google if it is honest. A blanket build timestamp
 // claims every page changed on every deploy, so instead each route reports the
@@ -55,10 +56,17 @@ function lastmodFor(url) {
   return buildTime;
 }
 
+// Template comparisons without their own verdict carry noindex (see
+// compare_pairs.json); a noindex URL in the sitemap is a mixed signal, so the
+// sitemap lists only the pairs marked "index": true.
+const pairs = JSON.parse(readFileSync(new URL('./src/data/compare_pairs.json', import.meta.url), 'utf8')).pairs;
+const NOINDEX_PATHS = new Set(pairs.filter((p) => p.index !== true).map((p) => `/compare/${p.a}-vs-${p.b}/`));
+
 export default defineConfig({
   site: 'https://wattlibrary.com',
   integrations: [
     sitemap({
+      filter: (page) => !NOINDEX_PATHS.has(new URL(page).pathname),
       serialize(item) {
         item.lastmod = lastmodFor(item.url).toISOString();
         return item;
