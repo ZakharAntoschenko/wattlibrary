@@ -1,0 +1,25 @@
+# WattLibrary
+
+> Independent, ad-free structured database of portable power stations with verified manufacturer specifications, transparent appliance runtime math, MPPT solar panel compatibility tools, and side-by-side comparisons.
+
+## Methodology
+- All specifications are verified against manufacturer product sheets and user manuals, with source links on every model page.
+- AC runtime model: `capacity_wh * 0.85 / average_watts` (rounded down).
+- 12V DC runtime model (CPAP DC, Starlink Mini DC): `capacity_wh * 0.95 / average_watts` (rounded down).
+- Compressor appliances (full-size refrigerator: 60W 24h average / 900W startup surge; mini fridge: 25W avg / 400W surge; chest freezer: 50W avg / 800W surge) require both sufficient surge rating and continuous output to count as compatible.
+
+## Core Tools & Hubs
+- [Home](https://wattlibrary.com/): Database overview and top picks by value and release year.
+- [Power Station Database](https://wattlibrary.com/power-stations/): Filterable, sortable table of 32 verified models from 6 brands (245Wh–4,096Wh, kg and lbs).
+- [Runtime & Solar MPPT Calculator](https://wattlibrary.com/calculator/): Multi-appliance sizing calculator and cold-weather Voc solar panel compatibility checker across all 32 stations.
+- [Head-to-Head Comparisons](https://wattlibrary.com/compare/): Interactive any-vs-any comparison tool plus 18 curated editorial matchups.
+- [Brands](https://wattlibrary.com/brands/): Brand-by-brand hubs for EcoFlow, Bluetti, Anker, Jackery, Goal Zero, and DJI.
+- [About & Methodology](https://wattlibrary.com/about/): Data sources, formulas, and independence policy.
+
+## Worked Appliance & Solar Guides
+- [Power Station for CPAP](https://wattlibrary.com/guides/power-station-for-cpap/): Nights of backup (8h/night) on 12V DC vs AC, humidifier off (40W) vs on (85W), across all 32 models.
+- [Power Station for Refrigerator](https://wattlibrary.com/guides/power-station-for-refrigerator/): Compressor startup surge vs 24h duty-cycled average draw across all 32 models.
+- [Power Station for Starlink](https://wattlibrary.com/guides/power-station-for-starlink/): Runtime for Starlink Mini (25W DC/AC) and Standard Gen 3 (55W normal, 110W snow melt) plus solar replenishment math.
+- [Power Station for Home Office & UPS](https://wattlibrary.com/guides/power-station-for-home-office-ups/): 10ms vs 20ms vs 30ms UPS switchover for desktop PCs, routers, and monitors across all 32 models.
+- [Power Station for Space Heater](https://wattlibrary.com/guides/power-station-for-space-heater/): Why 750W and 1,500W resistive heaters drain batteries fast and how boost/voltage-drop modes really work.
+- [Solar Panel Compatibility & MPPT Guide](https://wattlibrary.com/guides/solar-panel-compatibility/): MPPT voltage windows, cold-weather Voc rise, over-paneling rules, and solar recharge hours for all 32 models.

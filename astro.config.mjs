@@ -1,66 +1,43 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
-import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
-// lastmod is only useful to Google if it is honest. A blanket build timestamp
-// claims every page changed on every deploy, so instead each route reports the
-// last commit that touched the sources it is actually rendered from: its own
-// template, the shared layout/helpers, and the data files it reads.
-// Falls back to build time when git history isn't available (shallow CI clone).
-const buildTime = new Date();
+// Explicit, shallow-clone-safe lastmod dates. Relying on `git log` breaks on
+// Cloudflare Pages shallow clones (depth=1), causing every deploy to stamp
+// every URL with the build timestamp — which trains Google to ignore lastmod.
+// Data-driven pages inherit the database `updated` date; individual static and
+// guide pages record when their content actually changed.
+const db = JSON.parse(readFileSync(new URL('./src/data/power_stations.json', import.meta.url), 'utf8'));
+const pairs = JSON.parse(readFileSync(new URL('./src/data/compare_pairs.json', import.meta.url), 'utf8')).pairs;
 
-function lastCommit(paths) {
-  try {
-    const out = execSync(`git log -1 --format=%cI -- ${paths.join(' ')}`, {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
-    return out ? new Date(out) : null;
-  } catch {
-    return null; // no git, no history, or not a repo
-  }
-}
+const DATA_UPDATED = `${db.updated}T00:00:00.000Z`;
 
-const SHARED = ['src/layouts/Base.astro', 'src/lib/utils.js'];
-const STATIONS = ['src/data/power_stations.json'];
-const PAIRS = ['src/data/compare_pairs.json', 'src/lib/compare.js'];
-
-const at = (...paths) => lastCommit([...SHARED, ...paths]) ?? buildTime;
-
-const GUIDES = ['src/lib/guides.js'];
-
-const LASTMOD = {
-  home: at('src/pages/index.astro', ...STATIONS),
-  about: at('src/pages/about.astro'),
-  guideIndex: at('src/pages/guides/index.astro', ...STATIONS),
-  guideCpap: at('src/pages/guides/power-station-for-cpap.astro', ...STATIONS, ...GUIDES),
-  guideFridge: at('src/pages/guides/power-station-for-refrigerator.astro', ...STATIONS, ...GUIDES),
-  catalogue: at('src/pages/power-stations/index.astro', ...STATIONS, ...PAIRS),
-  model: at('src/pages/power-stations/[slug].astro', ...STATIONS, ...PAIRS),
-  compareIndex: at('src/pages/compare/index.astro', ...STATIONS, ...PAIRS),
-  comparePair: at('src/pages/compare/[pair].astro', ...STATIONS, ...PAIRS),
+const ROUTE_LASTMOD = {
+  '/': DATA_UPDATED,
+  '/about/': '2026-11-26T00:00:00.000Z',
+  '/calculator/': DATA_UPDATED,
+  '/power-stations/': DATA_UPDATED,
+  '/brands/': DATA_UPDATED,
+  '/compare/': DATA_UPDATED,
+  '/guides/': DATA_UPDATED,
+  '/guides/power-station-for-cpap/': DATA_UPDATED,
+  '/guides/power-station-for-refrigerator/': DATA_UPDATED,
+  '/guides/power-station-for-starlink/': DATA_UPDATED,
+  '/guides/power-station-for-home-office-ups/': DATA_UPDATED,
+  '/guides/power-station-for-space-heater/': DATA_UPDATED,
+  '/guides/solar-panel-compatibility/': DATA_UPDATED,
 };
 
 function lastmodFor(url) {
   const path = new URL(url).pathname;
-  if (path === '/') return LASTMOD.home;
-  if (path === '/about/') return LASTMOD.about;
-  if (path === '/power-stations/') return LASTMOD.catalogue;
-  if (path.startsWith('/power-stations/')) return LASTMOD.model;
-  if (path === '/guides/') return LASTMOD.guideIndex;
-  if (path === '/guides/power-station-for-cpap/') return LASTMOD.guideCpap;
-  if (path === '/guides/power-station-for-refrigerator/') return LASTMOD.guideFridge;
-  if (path === '/compare/') return LASTMOD.compareIndex;
-  if (path.startsWith('/compare/')) return LASTMOD.comparePair;
-  return buildTime;
+  return ROUTE_LASTMOD[path] ?? DATA_UPDATED;
 }
 
-// Template comparisons without their own verdict carry noindex (see
-// compare_pairs.json); a noindex URL in the sitemap is a mixed signal, so the
-// sitemap lists only the pairs marked "index": true.
-const pairs = JSON.parse(readFileSync(new URL('./src/data/compare_pairs.json', import.meta.url), 'utf8')).pairs;
-const NOINDEX_PATHS = new Set(pairs.filter((p) => p.index !== true).map((p) => `/compare/${p.a}-vs-${p.b}/`));
+// Secondary comparison pairs carry noindex, follow; filter them out of the
+// sitemap so Google and Bing never see mixed sitemap + noindex signals.
+const NOINDEX_PATHS = new Set(
+  pairs.filter((p) => p.index !== true).map((p) => `/compare/${p.a}-vs-${p.b}/`)
+);
 
 export default defineConfig({
   site: 'https://wattlibrary.com',
@@ -68,7 +45,7 @@ export default defineConfig({
     sitemap({
       filter: (page) => !NOINDEX_PATHS.has(new URL(page).pathname),
       serialize(item) {
-        item.lastmod = lastmodFor(item.url).toISOString();
+        item.lastmod = lastmodFor(item.url);
         return item;
       },
     }),

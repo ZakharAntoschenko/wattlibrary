@@ -1,11 +1,76 @@
 // Derived metrics and shared helpers. All computed from power_stations.json at build time.
 
 export const INVERTER_EFFICIENCY = 0.85;
+export const SOLAR_EFFECTIVE_FACTOR = 0.78; // real-world panel harvest (~85% of STC) × ~92% MPPT/charge efficiency
 
 export const GUIDE_URLS = {
   cpap: '/guides/power-station-for-cpap/',
   fridge: '/guides/power-station-for-refrigerator/',
+  starlink: '/guides/power-station-for-starlink/',
+  ups: '/guides/power-station-for-home-office-ups/',
+  heater: '/guides/power-station-for-space-heater/',
+  solar: '/guides/solar-panel-compatibility/',
 };
+
+export const BRAND_INFO = {
+  EcoFlow: {
+    summary: 'Known for very fast wall charging (X-Stream), XT60 solar ports, and broad capacity expansion across the DELTA line.',
+    connectorNote: 'Most models use standard XT60 (or XT60i) solar inputs, making third-party solar panels straightforward to connect.',
+    strengths: 'Fast AC recharge, sub-10ms UPS on Gen 3 models, strong expansion ecosystem.',
+  },
+  Bluetti: {
+    summary: 'Heavy focus on long-life LiFePO4 packs (up to 6,000 cycles on the Elite 200 V2) and high solar input ceilings.',
+    connectorNote: 'Newer models (AC70, Elite 100 V2, Elite 200 V2) use XT60; older models use DC7909 with an included MC4 adapter cable.',
+    strengths: 'High cycle-life ratings, 1,000W+ solar on compact units, strong launch $/Wh value.',
+  },
+  Anker: {
+    summary: 'Anker SOLIX targets rapid AC recharging, high USB-C PD output (dual 140W on newer units), and heavy 120/240V home backup.',
+    connectorNote: 'Uses XT60 / XT60i solar connectors across the lineup, with 11–60V windows on mid-size units and 11–165V on the F3800 series.',
+    strengths: '49-minute wall charging on C1000 Gen 2, 6,000W split-phase 240V on F3800/Plus, strong USB-C ports.',
+  },
+  Jackery: {
+    summary: 'Prioritizes simple controls and low carry weight — the Explorer 2000 v2 is the lightest 2kWh LiFePO4 unit in this database.',
+    connectorNote: 'Uses proprietary DC8020 / DC8mm barrel inputs; connecting non-Jackery MC4 panels requires an MC4-to-DC8020 adapter.',
+    strengths: 'Lightweight designs, low idle/standby drain, straightforward front-panel interface.',
+  },
+  'Goal Zero': {
+    summary: 'Early pioneer in portable power; legacy X-series units tracked here use older NMC lithium cells with slower charging.',
+    connectorNote: 'Uses 8mm barrel ports on smaller units and High Power Port (Anderson/HPP) inputs on larger stations.',
+    strengths: 'Broad legacy accessory support, though modern LFP rivals offer 6× the cycle life and much faster AC charging.',
+  },
+  DJI: {
+    summary: 'Built around ultra-quiet cooling (23–29dB), strong continuous inverters, dual 140W USB-C, and native SDC drone fast-charging.',
+    connectorNote: 'Solar charging routes through proprietary SDC ports using an optional DJI MPPT or 1.8kW Super Fast Charger adapter.',
+    strengths: 'Lowest acoustic noise in class, high continuous wattage, massive 22.5kWh expansion on Power 2000.',
+  },
+};
+
+export function brandSlug(brand) {
+  return brand.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+export function kgToLbs(kg) {
+  return +(kg * 2.20462).toFixed(1);
+}
+
+export function formatWeight(kg) {
+  return `${kg} kg (${kgToLbs(kg)} lbs)`;
+}
+
+export function parseVoltageWindow(range) {
+  const m = String(range ?? '').match(/(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)/);
+  if (!m) return { min: 11, max: 60 };
+  return { min: Number(m[1]), max: Number(m[2]) };
+}
+
+// Estimated hours of peak direct sunlight to refill 0–100% at the given panel
+// wattage (capped at the station's MPPT ceiling). Applies SOLAR_EFFECTIVE_FACTOR
+// because real panels rarely deliver 100% of STC nameplate wattage.
+export function solarChargeHours(station, panelWatts = station.solar_input_w) {
+  const effectiveIn = Math.min(panelWatts, station.solar_input_w) * SOLAR_EFFECTIVE_FACTOR;
+  if (!effectiveIn || effectiveIn <= 0) return null;
+  return station.capacity_wh / effectiveIn;
+}
 
 // Compressor appliances are two problems, not one. Feeding them is an
 // average-draw problem: the compressor cycles and runs roughly a third of the
@@ -32,18 +97,18 @@ const compressor = (key) => COMPRESSOR_LOADS.find((l) => l.key === key);
 // running and surge figures used for the start check.
 export const APPLIANCES = [
   { slug: 'led-bulb', name: 'LED bulb', watts: 10 },
-  { slug: 'wifi-router', name: 'Wi-Fi router + modem', watts: 15 },
+  { slug: 'wifi-router', name: 'Wi-Fi router + modem', watts: 15, guide: GUIDE_URLS.ups },
   { slug: 'cpap', name: 'CPAP machine (no humidifier)', watts: 40, guide: GUIDE_URLS.cpap },
-  { slug: 'starlink', name: 'Starlink (standard kit)', watts: 50 },
+  { slug: 'starlink', name: 'Starlink (Standard kit)', watts: 55, guide: GUIDE_URLS.starlink },
   { slug: 'fan', name: 'Box fan', watts: 50 },
-  { slug: 'laptop', name: 'Laptop', watts: 60 },
+  { slug: 'laptop', name: 'Laptop', watts: 60, guide: GUIDE_URLS.ups },
   { slug: 'tv', name: '55" LED TV', watts: 100 },
   { slug: 'mini-fridge', name: 'Mini fridge', watts: compressor('mini').average_w, load: compressor('mini'), guide: GUIDE_URLS.fridge },
   { slug: 'fridge', name: 'Full-size refrigerator', watts: compressor('full').average_w, load: compressor('full'), guide: GUIDE_URLS.fridge },
   { slug: 'chest-freezer', name: 'Chest freezer', watts: compressor('freezer').average_w, load: compressor('freezer'), guide: GUIDE_URLS.fridge },
   { slug: 'coffee-maker', name: 'Coffee maker', watts: 900 },
   { slug: 'microwave', name: 'Microwave (700W cooking)', watts: 1000 },
-  { slug: 'space-heater', name: 'Space heater', watts: 1500 },
+  { slug: 'space-heater', name: 'Space heater', watts: 1500, guide: GUIDE_URLS.heater },
 ];
 
 export function runtimeHours(station, watts) {
@@ -116,18 +181,13 @@ export function metaFromParts(parts, max = 158) {
   return out || clampMeta(parts.filter(Boolean)[0] ?? '', max);
 }
 
-// Two appliances this unit can actually run, heaviest first, for the
-// "runs a fridge ~14 h" line in meta descriptions. Short labels and short
-// units on purpose: every character saved here is one the snippet can spend
-// on another number. A fridge is named without watts: its average (60W) is
-// not a number anyone recognises from their fridge, and its plate figure
-// (150W) is not what the runtime is based on.
 const META_LABELS = {
   fridge: 'fridge',
   laptop: 'laptop',
   cpap: 'CPAP',
   'wifi-router': 'router',
   'mini-fridge': 'mini fridge',
+  starlink: 'Starlink',
   tv: 'TV',
 };
 
@@ -135,8 +195,6 @@ function shortRuntime(hours) {
   return formatRuntime(hours).replace(/ hours?$/, ' h').replace(/ minutes$/, ' min');
 }
 
-// CPAP before laptop: at a 60W fridge average a laptop would just repeat the
-// fridge's number, and CPAP runtime is one of the questions people bring here.
 export function headlineRuntimes(station, slugs = ['fridge', 'cpap', 'laptop', 'wifi-router']) {
   const out = [];
   for (const slug of slugs) {
@@ -174,8 +232,7 @@ export function alternatives(station, all, n = 3) {
     .slice(0, n);
 }
 
-// Closest-capacity models from the SAME brand. Complements alternatives(),
-// which deliberately only returns other brands.
+// Closest-capacity models from the SAME brand.
 export function sameBrandSiblings(station, all, n = 3) {
   return all
     .filter((s) => s.slug !== station.slug && s.brand === station.brand)

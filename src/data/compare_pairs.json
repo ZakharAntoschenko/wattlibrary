@@ -1,6 +1,14 @@
 {
-  "note": "Pairs for /compare/. Order [a, b] fixes the canonical URL a-vs-b. Optional 'verdict' field overrides the auto-generated verdict with hand-written text. Only pairs with \"index\": true are indexable and listed in the sitemap; the rest render normally for visitors but carry noindex, follow. The eight indexable ones are the pairs Google had already indexed as of 25.10.2026; a template comparison without its own verdict should not be added to the index.",
+  "note": "Pairs for /compare/. Order [a, b] fixes the canonical URL a-vs-b. Pairs with \"index\": true carry bespoke hand-written verdicts + buyer takeaways and are included in the sitemap and IndexNow. Secondary pairs remain accessible to visitors (and custom compare handles any arbitrary pair) with noindex, follow.",
   "pairs": [
+    {
+      "a": "ecoflow-river-3-plus",
+      "b": "bluetti-eb3a",
+      "index": true,
+      "verdict": "Both squeeze a 600W inverter into a sub-300Wh portable box, but the EcoFlow RIVER 3 Plus is a full generation ahead. For the same $299 launch price, it doubles the UPS speed (10ms vs 20ms), widens the solar voltage window from Bluetti's cramped 12–28V to a far more forgiving 11–55V, adds a third AC outlet, and stacks wirelessly up to 858Wh if your needs grow. The Bluetti EB3A only still makes sense when deeply discounted well below $200 or if its 30-minute 0–80% wall charge is the single spec you care about.",
+      "pick_a": "You want 10ms UPS for a desktop/router, higher solar panel flexibility (11–55V), quieter sub-30dB operation, or optional battery expansion to 858Wh.",
+      "pick_b": "You find the EB3A on steep clearance under $200 and only need a simple 600W portable box without expansion."
+    },
     {
       "a": "ecoflow-river-3",
       "b": "bluetti-eb3a"
@@ -22,9 +30,52 @@
       "b": "bluetti-eb3a"
     },
     {
+      "a": "anker-solix-c1000-gen-2",
+      "b": "ecoflow-delta-3-plus",
+      "index": true,
+      "verdict": "These are the two sharpest all-round 1kWh power stations on the market, both packing 1,024Wh LFP (4,000 cycles), 10ms UPS, and 140W USB-C. The Anker SOLIX C1000 Gen 2 wins on raw wall convenience: a slightly stronger 2,000W continuous inverter, 24.9 lb carry weight, a record 49-minute full wall charge, and a $200 lower launch price. The EcoFlow DELTA 3 Plus counters where off-grid and long-outage users care most: dual 500W MPPT solar ports (1,000W total vs Anker's 600W) and capacity expansion up to 5,000Wh — Anker dropped expansion on the Gen 2.",
+      "pick_a": "You want the fastest wall recharge (0–80% in 38 min), a 2,000W continuous inverter, lighter 24.9 lb weight, and lower launch price ($699).",
+      "pick_b": "You plan to recharge heavily from solar (1,000W dual MPPT) or want the option to add expansion batteries up to 5kWh."
+    },
+    {
+      "a": "bluetti-elite-100-v2",
+      "b": "ecoflow-delta-3-plus",
+      "index": true,
+      "verdict": "On paper these two 1,024Wh stations are dead heats: 4,000-cycle LFP, 1,800W continuous AC, 3,600W surge, 1,000W solar (12–60V vs 11–60V), 140W USB-C, and 10ms UPS. The split comes down to price and portability versus future expansion. The Bluetti Elite 100 V2 launches $300 cheaper ($599 vs $899), shaves 2.2 lbs off the scale, and reaches 1,000W solar through a single XT60 port. The EcoFlow DELTA 3 Plus justifies its premium with six AC outlets (vs four), dual independent MPPT inputs, and expansion up to 5,000Wh.",
+      "pick_a": "You want 1,000W solar and 10ms UPS for the lowest price ($599 launch) in a compact 25.4 lb chassis and don't need extra batteries.",
+      "pick_b": "You need battery expandability (up to 5kWh), six AC outlets, or two independent solar MPPT ports."
+    },
+    {
+      "a": "bluetti-elite-100-v2",
+      "b": "anker-solix-c1000-gen-2",
+      "index": true,
+      "verdict": "Both are compact, non-expandable 2025 1kWh workhorses weighing ~25 lbs with 4,000-cycle LFP cells, 140W USB-C, and 10ms UPS. Your charging source decides this matchup cleanly. If you recharge from solar panels off-grid, the Bluetti Elite 100 V2's 1,000W MPPT input refills the pack in a little over an hour of strong sun — 67% faster than Anker's 600W ceiling — and it launches $100 cheaper with higher 3,600W surge headroom. If you recharge from a wall outlet between trips or outages, the Anker SOLIX C1000 Gen 2 delivers a stronger 2,000W continuous inverter, five AC outlets, and a 49-minute full AC charge.",
+      "pick_a": "You rely on solar charging (1,000W vs 600W), want higher 3,600W surge headroom, and prefer the lower $599 launch price.",
+      "pick_b": "You want 2,000W continuous AC output, five AC outlets, and the fastest possible wall recharge."
+    },
+    {
+      "a": "anker-solix-c1000",
+      "b": "anker-solix-c1000-gen-2",
+      "index": true,
+      "verdict": "Anker's Gen 2 is faster, lighter, and better specced almost everywhere — except one major deletion: expandability. The C1000 Gen 2 boosts output to 2,000W (3,000W surge), doubles UPS speed to 10ms, upgrades USB-C to dual 140W, extends cycle life to 4,000, drops 3.5 lbs, and drops launch MSRP by $300. However, the original C1000 still holds two cards: it supports the BP1000 expansion battery (doubling capacity to 2,112Wh) and has a sixth AC outlet. If you never plan to add a second battery, the Gen 2 is an easy upgrade.",
+      "pick_a": "You specifically want to expand capacity to 2,112Wh with the BP1000 battery or find the original C1000 heavily discounted.",
+      "pick_b": "You want 10ms UPS, 2,000W output, 140W USB-C, 4,000 cycles, and a lighter 24.9 lb body without needing extra batteries."
+    },
+    {
+      "a": "bluetti-elite-100-v2",
+      "b": "bluetti-ac180",
+      "index": true,
+      "verdict": "The Elite 100 V2 largely obsoletes the older AC180 for most buyers. Even though the AC180 holds 128Wh more battery (1,152Wh vs 1,024Wh — roughly two extra hours on a full-size fridge), the Elite 100 V2 cuts nearly 10 pounds of weight (25.4 vs 35.3 lbs), doubles solar input to 1,000W, halves UPS switchover to 10ms, adds 140W USB-C, raises surge to 3,600W, and launched $400 cheaper. Only pick the AC180 if a steep clearance price makes its extra 128Wh cheaper per watt-hour than the Elite 100 V2.",
+      "pick_a": "You want 1,000W solar, 10ms UPS, 140W USB-C, and a 10 lb weight savings in a much smaller footprint.",
+      "pick_b": "You find the AC180 heavily discounted and care strictly about the extra 128Wh of static backup capacity."
+    },
+    {
       "a": "ecoflow-delta-3-plus",
       "b": "anker-solix-c1000",
-      "index": true
+      "index": true,
+      "verdict": "Comparing EcoFlow's newer DELTA 3 Plus against the first-generation Anker SOLIX C1000 shows how quickly 1kWh hardware evolved. The DELTA 3 Plus brings 10ms UPS (vs 20ms), 4,000 cycles (vs 3,000), 1,000W dual-MPPT solar (vs 600W), 140W USB-C, 3,600W surge, and expansion up to 5,000Wh (vs 2,112Wh). The original C1000's sole advantage is street pricing — because it has been superseded by the Gen 2, it routinely sells well below launch price while still delivering 1,056Wh and fast 43-minute 0–80% AC charging.",
+      "pick_a": "You want 10ms UPS for PCs/CPAPs, 1,000W solar input, 4,000-cycle longevity, and bigger 5kWh expandability.",
+      "pick_b": "You find the original C1000 deeply discounted on sale and 600W solar / 20ms UPS already fits your needs."
     },
     {
       "a": "ecoflow-delta-3-plus",
@@ -41,12 +92,18 @@
     {
       "a": "ecoflow-delta-3-plus",
       "b": "bluetti-ac180",
-      "index": true
+      "index": true,
+      "verdict": "The Bluetti AC180 gives you 128Wh more energy out of the box (1,152Wh vs 1,024Wh), which translates to roughly two extra hours on a refrigerator or an extra half-night on a CPAP. Everywhere else, the newer EcoFlow DELTA 3 Plus pulls sharply ahead: 7.7 lbs lighter, twice the solar input (1,000W vs 500W), twice the UPS speed (10ms vs 20ms), higher 3,600W surge, six AC outlets, 140W USB-C, and expansion up to 5kWh. Buy the AC180 strictly as a value play when discounted; buy the DELTA 3 Plus as a more capable system.",
+      "pick_a": "You want a lighter, expandable 1kWh unit with 1,000W solar input, 10ms UPS, and six AC outlets.",
+      "pick_b": "You want maximum standalone capacity (1,152Wh) at a low street price and don't plan to expand."
     },
     {
       "a": "ecoflow-delta-2",
       "b": "anker-solix-c1000",
-      "index": true
+      "index": true,
+      "verdict": "Two classic 1kWh workhorses that still trade blows on sale pricing. Both deliver 1,800W continuous AC, 3,000-cycle LFP cells, six AC outlets, and expandable batteries. The Anker SOLIX C1000 edges ahead on day-to-day polish: 100W more solar (600W vs 500W), faster 20ms UPS (vs EcoFlow's 30ms EPS, which can reboot sensitive desktop PCs), slightly faster 43-minute wall charge, and 32Wh more capacity. The EcoFlow DELTA 2 hits back with higher 2,700W surge, slightly lower weight, and deeper expansion ceiling (3,040Wh vs 2,112Wh).",
+      "pick_a": "You want higher battery expansion (up to 3,040Wh), 2,700W surge headroom, or already own EcoFlow extra batteries.",
+      "pick_b": "You want 20ms UPS switchover, 600W solar input, and slightly faster AC charging."
     },
     {
       "a": "ecoflow-delta-2",
@@ -55,7 +112,10 @@
     {
       "a": "ecoflow-delta-2",
       "b": "bluetti-ac180",
-      "index": true
+      "index": true,
+      "verdict": "This matchup comes down to portability and expandability versus standalone watt-hours and UPS speed. The Bluetti AC180 packs 128Wh more battery inside the box and switches over in 20ms (faster than the DELTA 2's 30ms EPS), making it stronger out of the gate for outage backup — at the cost of carrying 8.4 extra pounds. The EcoFlow DELTA 2 is noticeably easier to move at 26.9 lbs, gives you six AC outlets instead of four, and can grow to 3,040Wh with an extra battery whereas the AC180 is sealed at 1,152Wh.",
+      "pick_a": "You want a lighter 26.9 lb unit, six AC outlets, or the ability to expand up to 3,040Wh later.",
+      "pick_b": "You want 1,152Wh in one box with 20ms UPS and don't mind the 35.3 lb carry weight."
     },
     {
       "a": "jackery-explorer-1000-v2",
@@ -72,12 +132,42 @@
     {
       "a": "dji-power-1000",
       "b": "ecoflow-delta-3-plus",
-      "index": true
+      "index": true,
+      "verdict": "Both store 1,024Wh in 4,000-cycle LFP packs with 140W USB-C, but they are built for different buyers. The DJI Power 1000 is a specialist: whisper-quiet at 23dB, a beefy 2,200W continuous inverter (400W above EcoFlow), and native SDC fast-charging for DJI drone batteries. Its catch is ecosystem friction — only two AC outlets, no expansion, and solar panels require buying DJI's separate MPPT adapter module (12–30V per input). The EcoFlow DELTA 3 Plus is the far better general home/off-grid unit with 10ms UPS, six AC outlets, built-in 1,000W XT60 solar (11–60V), and expansion to 5kWh.",
+      "pick_a": "You shoot video/drones on location, need near-silent 23dB operation, or need 2,200W continuous output in a 1kWh chassis.",
+      "pick_b": "You want a plug-and-play home or off-grid backup with 10ms UPS, six AC outlets, direct XT60 solar, and expandability."
     },
     {
       "a": "dji-power-1000",
       "b": "anker-solix-c1000",
-      "index": true
+      "index": true,
+      "verdict": "The DJI Power 1000 beats the original Anker SOLIX C1000 on continuous inverter output (2,200W vs 1,800W), cycle life (4,000 vs 3,000), USB-C speed (140W vs 100W), and noise (23dB — virtually inaudible in a tent or bedroom). The Anker SOLIX C1000 wins on everyday practicality: six AC outlets instead of two, built-in 11–60V XT60 solar without buying extra adapter boxes, and expansion to 2,112Wh. If you fly DJI drones or value silence above all else, pick DJI; for general home/camping versatility, Anker is easier to live with.",
+      "pick_a": "You want 23dB quiet operation, 2,200W continuous AC, 140W USB-C, 4,000 cycles, or fast DJI drone charging.",
+      "pick_b": "You want six AC outlets, built-in 600W XT60 solar (11–60V), and optional expansion to 2,112Wh."
+    },
+    {
+      "a": "jackery-explorer-2000-v2",
+      "b": "bluetti-elite-200-v2",
+      "index": true,
+      "verdict": "Two compact, non-expandable 2kWh stations aimed at the same buyer — and a textbook trade-off between carry weight and raw capability. The Jackery Explorer 2000 v2 weighs just 39.5 lbs (13.9 lbs lighter than the Bluetti!), making it one of the only 2kWh LFP boxes one person can comfortably lift in and out of a trunk. The Bluetti Elite 200 V2 asks you to carry 53.4 lbs, and pays you back generously: 6,000 cycles (vs 4,000), 2,600W continuous AC / 5,200W surge (vs 2,200W / 4,400W), 2.5× the solar input (1,000W vs Jackery's 400W bottleneck), and a lower $1,099 launch price.",
+      "pick_a": "Portability is priority #1 — saving 14 lbs (39.5 vs 53.4 lbs) matters more to you than fast solar recharging.",
+      "pick_b": "You want 1,000W solar input (critical for recharging 2kWh off-grid), 6,000-cycle battery life, 2,600W AC output, and better value."
+    },
+    {
+      "a": "dji-power-2000",
+      "b": "ecoflow-delta-2-max",
+      "index": true,
+      "verdict": "Both hold 2,048Wh and target heavy home backup and van builds, but the newer DJI Power 2000 pushes the spec ceiling much higher: 3,000W continuous AC (vs 2,400W), 10ms UPS (vs 30ms), 4,000 cycles (vs 3,000), under 29dB acoustic noise, dual 140W USB-C, and massive 22.5kWh expandability — all at a $600 lower launch price ($1,299 vs $1,899). EcoFlow's DELTA 2 Max still wins on out-of-the-box solar simplicity (1,000W built-in dual XT60, 11–60V, no extra modules required) and surge rating (4,800W vs 3,600W).",
+      "pick_a": "You want 3,000W continuous AC, 10ms UPS, near-silent <29dB operation, 140W USB-C, and huge 22.5kWh expandability.",
+      "pick_b": "You want plug-and-play 1,000W XT60 solar without external adapters, six AC outlets, and 4,800W surge capacity."
+    },
+    {
+      "a": "dji-power-2000",
+      "b": "bluetti-elite-200-v2",
+      "index": true,
+      "verdict": "This is wall-and-expansion power versus standalone solar longevity. Both hold ~2,050Wh and run a full-size refrigerator for roughly 29 hours. The DJI Power 2000 brings a stronger 3,000W continuous inverter, 10ms UPS, dual 140W USB-C, 4.9 lbs less weight, and battery expansion all the way to 22,528Wh — though connecting solar panels requires buying DJI's SDC adapter. The Bluetti Elite 200 V2 is completely self-contained: plug up to 1,000W of solar straight into its 12–60V MPPT port, enjoy a segment-leading 6,000-cycle LFP pack and 5,200W surge, and pay $200 less at launch.",
+      "pick_a": "You want 3,000W output, 10ms UPS, quieter <29dB operation, or the ability to expand well past 2kWh.",
+      "pick_b": "You want built-in 1,000W solar input with zero adapters, 6,000-cycle durability, and a lower upfront price."
     },
     {
       "a": "ecoflow-delta-2-max",
@@ -90,7 +180,10 @@
     {
       "a": "bluetti-elite-200-v2",
       "b": "bluetti-ac200l",
-      "index": true
+      "index": true,
+      "verdict": "Bluetti's own 2kWh lineup splits cleanly between standalone value and RV/solar modularity. The newer Elite 200 V2 is lighter by 9 lbs, doubles battery longevity to 6,000 cycles, increases AC output to 2,600W (5,200W surge), and launched $600 cheaper ($1,099 vs $1,699). The AC200L earns its keep for RV owners and high-voltage solar arrays: it adds a dedicated 30A RV outlet, expands up to 8,192Wh with extra batteries (the Elite 200 V2 cannot expand), and accepts up to 145V on its 1,200W MPPT — letting you wire residential panels in series.",
+      "pick_a": "You want the best standalone 2kWh value, 6,000 cycles, 2,600W AC, and 9 lbs less weight.",
+      "pick_b": "You need a 30A RV outlet, capacity expansion up to 8.2kWh, or a 12–145V high-voltage solar input."
     },
     {
       "a": "jackery-explorer-2000-plus",
@@ -110,6 +203,14 @@
     },
     {
       "a": "ecoflow-delta-pro-3",
+      "b": "anker-solix-f3800-plus",
+      "index": true,
+      "verdict": "Two flagship 120/240V split-phase home backup stations, each capable of running a well pump, dryer, or home transfer switch from a single box. The Anker SOLIX F3800 Plus is the brute-force choice: 6,000W continuous output (50% higher than EcoFlow's 4,000W), 3,200W dual-MPPT solar (11–165V), 240V generator passthrough, and expansion to 26.9kWh — at a hefty 136.7 lbs and $4,799 launch. The EcoFlow DELTA Pro 3 is $1,100 cheaper at launch, 23 lbs lighter, holds 256Wh more base capacity (4,096Wh), switches in 10ms (vs 20ms), charges far faster from a standard 120V wall outlet (0–80% in 50 min), and carries a 4,000-cycle rating.",
+      "pick_a": "You want 4,096Wh base capacity, faster 10ms UPS, 50-minute AC recharge, 4,000 cycles, and $1,100 lower launch cost.",
+      "pick_b": "You need 6,000W continuous 240V output (e.g. central AC / heavy well pumps), 3,200W solar input, or expansion past 12kWh."
+    },
+    {
+      "a": "ecoflow-delta-pro-3",
       "b": "anker-solix-f3800"
     },
     {
@@ -119,7 +220,10 @@
     {
       "a": "jackery-explorer-3000-pro",
       "b": "ecoflow-delta-pro",
-      "index": true
+      "index": true,
+      "verdict": "This is a clear win for the EcoFlow DELTA Pro on long-term durability and system growth. Both sit around 3–3.6kWh, but the DELTA Pro uses 3,500-cycle LiFePO4 cells (vs Jackery's 1,000-cycle NMC), delivers 576Wh more capacity, 600W more continuous AC (3,600W vs 3,000W), a 150V high-voltage solar input (1,600W vs 1,400W at 60V max), 20ms UPS, and expansion to 10.8kWh. The Jackery Explorer 3000 Pro's only real card is weight: NMC cells keep it 35 lbs lighter (63.9 vs 99.2 lbs) and $900 cheaper at launch.",
+      "pick_a": "You move the station frequently and saving 35 lbs (63.9 vs 99.2 lbs) matters more than multi-year daily cycling.",
+      "pick_b": "You want 3.5× longer LFP cycle life, 3,600Wh base capacity, 150V solar, UPS mode, and 10.8kWh expansion."
     }
   ]
 }

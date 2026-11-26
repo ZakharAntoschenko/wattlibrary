@@ -1,75 +1,130 @@
-// Comparison logic: winner detection per metric + auto-generated verdicts.
-import { dollarsPerWh, whPerKg, fullName, effectiveOutput, capacityClass } from './utils.js';
+// Comparison logic: winner detection per metric, real-world runtime diffs,
+// related pairs (prioritizing indexable curated pages), and fallback verdicts.
+import {
+  dollarsPerWh,
+  whPerKg,
+  fullName,
+  effectiveOutput,
+  capacityClass,
+  formatWeight,
+  formatRuntime,
+  canStart,
+  runtimeHours,
+  solarChargeHours,
+  COMPRESSOR_LOADS,
+} from './utils.js';
+import { CPAP_LOADS, nightsOfCpap, formatNights, hoursOnLoad } from './guides.js';
 
 export function pairSlug(a, b) {
   return `${a.slug}-vs-${b.slug}`;
 }
 
-// Lateral links between comparison pages. Without these every /compare/ page is a
-// dead end that only points back at its own two products, which leaves the largest
-// group of URLs on the site with no path between them.
-//
-// Tier 1: other pairs featuring one of these two models — the most useful next click.
-// Tier 2: pairs in the same capacity class, to fill out the block.
-// Sorted by slug so the same pair always renders the same list build after build.
+// Lateral links between comparison pages. Prioritizes curated indexable pairs
+// (`index: true`) so internal link equity concentrates on indexable pages,
+// falling back to non-indexed pairs only if needed to fill out the block.
 export function relatedPairs(a, b, pairs, bySlug, n = 6) {
   const self = pairSlug(a, b);
   const cls = capacityClass(Math.min(a.capacity_wh, b.capacity_wh));
 
   const all = pairs
-    .map((p) => ({ a: bySlug[p.a], b: bySlug[p.b] }))
+    .map((p) => ({ a: bySlug[p.a], b: bySlug[p.b], indexable: p.index === true }))
     .filter((p) => p.a && p.b && pairSlug(p.a, p.b) !== self);
 
   const shares = (p) =>
     p.a.slug === a.slug || p.b.slug === a.slug || p.a.slug === b.slug || p.b.slug === b.slug;
 
-  const bySlugAsc = (x, y) => pairSlug(x.a, x.b).localeCompare(pairSlug(y.a, y.b));
+  const byOrder = (x, y) => {
+    if (x.indexable !== y.indexable) return x.indexable ? -1 : 1;
+    return pairSlug(x.a, x.b).localeCompare(pairSlug(y.a, y.b));
+  };
 
-  const shared = all.filter(shares).sort(bySlugAsc);
+  const shared = all.filter(shares).sort(byOrder);
   const sameClass = all
     .filter((p) => !shares(p) && capacityClass(Math.min(p.a.capacity_wh, p.b.capacity_wh)) === cls)
-    .sort(bySlugAsc);
+    .sort(byOrder);
 
   return [...shared, ...sameClass].slice(0, n).map((p) => ({
     url: `/compare/${pairSlug(p.a, p.b)}/`,
     label: `${fullName(p.a)} vs ${fullName(p.b)}`,
     sub: `${p.a.capacity_wh.toLocaleString()}Wh vs ${p.b.capacity_wh.toLocaleString()}Wh`,
+    indexable: p.indexable,
   }));
 }
 
-// Rows for the diff table. dir: 1 = higher wins, -1 = lower wins, 0 = no winner.
+// Rows for the spec diff table. dir: 1 = higher wins, -1 = lower wins, 0 = no winner.
 export function compareRows(a, b) {
-  const rows = [
+  return [
     ['Battery capacity', `${a.capacity_wh.toLocaleString()} Wh`, `${b.capacity_wh.toLocaleString()} Wh`, cmp(a.capacity_wh, b.capacity_wh, 1)],
     ['Battery chemistry', chemLabel(a), chemLabel(b), cmp(a.chemistry === 'LFP' ? 1 : 0, b.chemistry === 'LFP' ? 1 : 0, 1)],
     ['Cycle life (to 80%)', a.cycles_to_80pct.toLocaleString(), b.cycles_to_80pct.toLocaleString(), cmp(a.cycles_to_80pct, b.cycles_to_80pct, 1)],
     ['AC output (continuous)', `${a.ac_output_w.toLocaleString()} W`, `${b.ac_output_w.toLocaleString()} W`, cmp(a.ac_output_w, b.ac_output_w, 1)],
     ['AC output (surge)', `${a.ac_surge_w.toLocaleString()} W`, `${b.ac_surge_w.toLocaleString()} W`, cmp(a.ac_surge_w, b.ac_surge_w, 1)],
+    ['AC outlets', `${a.ac_outlets}`, `${b.ac_outlets}`, cmp(a.ac_outlets, b.ac_outlets, 1)],
     ['240V output', a.output_240v ? 'Yes' : 'No', b.output_240v ? 'Yes' : 'No', cmp(a.output_240v ? 1 : 0, b.output_240v ? 1 : 0, 1)],
-    ['Max solar input', `${a.solar_input_w} W`, `${b.solar_input_w} W`, cmp(a.solar_input_w, b.solar_input_w, 1)],
+    ['Max solar input', `${a.solar_input_w.toLocaleString()} W`, `${b.solar_input_w.toLocaleString()} W`, cmp(a.solar_input_w, b.solar_input_w, 1)],
     ['Solar voltage window', a.solar_voltage_range, b.solar_voltage_range, 0],
     ['Max USB-C power', `${a.usb_c_max_w} W`, `${b.usb_c_max_w} W`, cmp(a.usb_c_max_w, b.usb_c_max_w, 1)],
     ['AC recharge 0–80%', minutes(a.ac_charge_minutes_0_80), minutes(b.ac_charge_minutes_0_80), cmp(a.ac_charge_minutes_0_80 ?? 9999, b.ac_charge_minutes_0_80 ?? 9999, -1)],
     ['UPS switchover', ups(a), ups(b), cmp(a.ups_switchover_ms ?? 9999, b.ups_switchover_ms ?? 9999, -1)],
     ['Expandable', expand(a), expand(b), cmp(a.expandable_max_wh ?? 0, b.expandable_max_wh ?? 0, 1)],
-    ['Weight', `${a.weight_kg} kg`, `${b.weight_kg} kg`, cmp(a.weight_kg, b.weight_kg, -1)],
+    ['Weight', formatWeight(a.weight_kg), formatWeight(b.weight_kg), cmp(a.weight_kg, b.weight_kg, -1)],
     ['Energy density', `${whPerKg(a).toFixed(0)} Wh/kg`, `${whPerKg(b).toFixed(0)} Wh/kg`, cmp(whPerKg(a), whPerKg(b), 1)],
     ['Launch price', `$${a.msrp_usd.toLocaleString()}`, `$${b.msrp_usd.toLocaleString()}`, 0],
     ['Value (launch $/Wh)', `$${dollarsPerWh(a).toFixed(2)}`, `$${dollarsPerWh(b).toFixed(2)}`, cmp(dollarsPerWh(a), dollarsPerWh(b), -1)],
   ];
-  return rows;
+}
+
+// Side-by-side real-world outcome rows (using the exact same runtime model as
+// model cards and guides).
+export function compareRuntimeRows(a, b) {
+  const fullFridge = COMPRESSOR_LOADS.find((l) => l.key === 'full');
+  const cpapAc = CPAP_LOADS.find((l) => l.key === 'ac');
+  const cpapDc = CPAP_LOADS.find((l) => l.key === 'dc');
+
+  const fridgeA = canStart(a, fullFridge) ? runtimeHours(a, fullFridge.average_w) : null;
+  const fridgeB = canStart(b, fullFridge) ? runtimeHours(b, fullFridge.average_w) : null;
+  const cpapAcA = nightsOfCpap(a, cpapAc);
+  const cpapAcB = nightsOfCpap(b, cpapAc);
+  const cpapDcA = nightsOfCpap(a, cpapDc);
+  const cpapDcB = nightsOfCpap(b, cpapDc);
+  const starA = hoursOnLoad(a, 55);
+  const starB = hoursOnLoad(b, 55);
+  const officeA = hoursOnLoad(a, 200);
+  const officeB = hoursOnLoad(b, 200);
+  const solarA = solarChargeHours(a);
+  const solarB = solarChargeHours(b);
+
+  const fmtSun = (h) => (h ? `${(Math.ceil(h * 10) / 10).toFixed(1)} sun hrs` : '—');
+  const fmtN = (n) => (n !== null ? `${formatNights(n)} nights` : '—');
+
+  return [
+    ['Full-size refrigerator (60W avg)', fridgeA ? formatRuntime(fridgeA) : "Can't start", fridgeB ? formatRuntime(fridgeB) : "Can't start", cmpNum(fridgeA ?? -1, fridgeB ?? -1, 1)],
+    ['CPAP on AC (40W, no humidifier)', fmtN(cpapAcA), fmtN(cpapAcB), cmpNum(cpapAcA ?? -1, cpapAcB ?? -1, 1)],
+    ['CPAP on 12V DC (40W, no humidifier)', fmtN(cpapDcA), fmtN(cpapDcB), cmpNum(cpapDcA ?? -1, cpapDcB ?? -1, 1)],
+    ['Starlink Standard (55W AC)', starA ? formatRuntime(starA) : '—', starB ? formatRuntime(starB) : '—', cmpNum(starA ?? -1, starB ?? -1, 1)],
+    ['Home office desktop + router (200W)', officeA ? formatRuntime(officeA) : '—', officeB ? formatRuntime(officeB) : '—', cmpNum(officeA ?? -1, officeB ?? -1, 1)],
+    ['Solar 0–100% (at max rated solar)', fmtSun(solarA), fmtSun(solarB), cmpNum(solarA ?? 999, solarB ?? 999, -1)],
+  ];
 }
 
 function cmp(av, bv, dir) {
   if (av === bv) return 0;
   return (av > bv ? 1 : -1) * dir; // 1 => a wins, -1 => b wins
 }
+
+// Require >3% difference on modeled runtimes so near-identical packs tie cleanly.
+function cmpNum(av, bv, dir) {
+  if (av === bv) return 0;
+  const max = Math.max(Math.abs(av), Math.abs(bv));
+  if (max > 0 && Math.abs(av - bv) / max < 0.03) return 0;
+  return (av > bv ? 1 : -1) * dir;
+}
+
 const chemLabel = (s) => (s.chemistry === 'LFP' ? 'LiFePO4' : 'NMC');
 const minutes = (m) => (m ? `${m} min` : '—');
 const ups = (s) => (s.ups_switchover_ms ? `${s.ups_switchover_ms} ms` : 'None');
 const expand = (s) => (s.expandable_max_wh ? `to ${s.expandable_max_wh.toLocaleString()} Wh` : 'No');
 
-// Human-readable strength list for one side.
 function strengths(x, y) {
   const out = [];
   const capRatio = x.capacity_wh / y.capacity_wh;
@@ -99,9 +154,6 @@ function listOut(items, max = 3) {
   return l.slice(0, -1).join(', ') + ' and ' + l[l.length - 1];
 }
 
-// Deterministic verdict paragraphs generated from the data.
-// Phrasing varies per pair (seeded by slugs) so pages don't read like clones,
-// but a given pair always renders the same text build after build.
 function seedFrom(a, b) {
   let h = 0;
   for (const ch of a.slug + b.slug) h = (h * 31 + ch.charCodeAt(0)) % 997;

@@ -1,0 +1,96 @@
+---
+import Base from '../../layouts/Base.astro';
+import db from '../../data/power_stations.json';
+import { brandSlug, BRAND_INFO, dollarsPerWh, fullName, metaFromParts } from '../../lib/utils.js';
+
+const stations = db.power_stations;
+const brandNames = [...new Set(stations.map((s) => s.brand))].sort();
+
+const brandRows = brandNames.map((brand) => {
+  const models = stations.filter((s) => s.brand === brand).sort((a, b) => a.capacity_wh - b.capacity_wh);
+  const whMin = Math.min(...models.map((m) => m.capacity_wh));
+  const whMax = Math.max(...models.map((m) => m.capacity_wh));
+  const lfpCount = models.filter((m) => m.chemistry === 'LFP').length;
+  const upsList = models.filter((m) => m.ups_switchover_ms).map((m) => m.ups_switchover_ms);
+  const fastestUps = upsList.length ? Math.min(...upsList) : null;
+  const bestVal = [...models].sort((a, b) => dollarsPerWh(a) - dollarsPerWh(b))[0];
+  return {
+    brand,
+    slug: brandSlug(brand),
+    models,
+    whMin,
+    whMax,
+    lfpCount,
+    fastestUps,
+    bestVal,
+    info: BRAND_INFO[brand],
+  };
+});
+
+const title = `Portable Power Station Brands Compared (${brandRows.length} Brands)`;
+const description = metaFromParts([
+  `Compare ${brandRows.map((b) => b.brand).join(', ')} across ${stations.length} verified models:`,
+  'capacity ranges, LiFePO4 adoption, UPS speeds, solar connectors, and best value per Wh.',
+]);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'CollectionPage',
+      name: title,
+      description,
+      url: new URL(Astro.url.pathname, Astro.site).href,
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: 'Brands' },
+      ],
+    },
+  ],
+};
+---
+<Base {title} {description} {schema}>
+  <nav class="crumbs"><a href="/">Home</a> › Brands</nav>
+  <h1>Portable power station brands</h1>
+  <p class="lead">
+    All {stations.length} verified stations grouped by manufacturer — comparing battery chemistry, solar connector ecosystems,
+    UPS speeds, and value per watt-hour.
+  </p>
+
+  <div class="tbl tbl-sticky"><div class="tbl-scroll"><table>
+    <thead>
+      <tr>
+        <th>Brand</th>
+        <th>Models</th>
+        <th>Capacity range</th>
+        <th>LiFePO4</th>
+        <th>Fastest UPS</th>
+        <th>Best $/Wh model</th>
+      </tr>
+    </thead>
+    <tbody>
+      {brandRows.map((b) => (
+        <tr>
+          <td><a href={`/brands/${b.slug}/`}><b>{b.brand}</b></a></td>
+          <td>{b.models.length}</td>
+          <td>{b.whMin.toLocaleString()}–{b.whMax.toLocaleString()} Wh</td>
+          <td>{b.lfpCount} of {b.models.length}</td>
+          <td>{b.fastestUps ? `${b.fastestUps} ms` : <span class="muted">None</span>}</td>
+          <td><a href={`/power-stations/${b.bestVal.slug}/`}>{b.bestVal.model}</a> (${dollarsPerWh(b.bestVal).toFixed(2)}/Wh)</td>
+        </tr>
+      ))}
+    </tbody>
+  </table></div></div>
+
+  <div class="grid">
+    {brandRows.map((b) => (
+      <div class="card">
+        <a href={`/brands/${b.slug}/`}>{b.brand} ({b.models.length} models) →</a>
+        <p class="sub">{b.info?.summary}</p>
+      </div>
+    ))}
+  </div>
+</Base>

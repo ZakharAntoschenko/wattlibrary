@@ -1,18 +1,17 @@
 ---
 import Base from '../../layouts/Base.astro';
 import db from '../../data/power_stations.json';
-import { fullName, metaFromParts, pickTitle, dollarsPerWh } from '../../lib/utils.js';
+import { fullName, metaFromParts, pickTitle, dollarsPerWh, kgToLbs, GUIDE_URLS } from '../../lib/utils.js';
 import { CPAP_LOADS, CPAP_HOURS_PER_NIGHT, nightsOfCpap, formatNights } from '../../lib/guides.js';
 
 const stations = [...db.power_stations].sort((a, b) => a.capacity_wh - b.capacity_wh);
+const count = stations.length;
 
 const rows = stations.map((s) => ({
   s,
   nights: Object.fromEntries(CPAP_LOADS.map((l) => [l.key, nightsOfCpap(s, l)])),
 }));
 
-// The "what should I buy" answer, computed rather than asserted: the smallest
-// pack in the database that clears each threshold.
 const tiers = [
   { need: 1, key: 'humid', label: 'One night, humidifier on' },
   { need: 2, key: 'humid', label: 'Two nights, humidifier on' },
@@ -21,8 +20,6 @@ const tiers = [
   { need: 4, key: 'ac', label: 'Four nights, humidifier off' },
 ].map((t) => ({ ...t, pick: rows.find((r) => r.nights[t.key] !== null && r.nights[t.key] >= t.need) }));
 
-// Passthrough matters more than capacity if the machine is plugged in at home:
-// the pack has to take over faster than the machine notices.
 const upsModels = stations
   .filter((s) => s.ups_switchover_ms && s.ups_switchover_ms <= 20)
   .sort((a, b) => a.ups_switchover_ms - b.ups_switchover_ms || a.capacity_wh - b.capacity_wh);
@@ -32,13 +29,13 @@ const cheapestOneNight = rows
   .sort((a, b) => a.s.msrp_usd - b.s.msrp_usd)[0];
 
 const title = pickTitle([
-  'Power Station for CPAP: How Many Nights, 26 Models',
+  `Power Station for CPAP: How Many Nights, ${count} Models`,
   'Power Station for CPAP: Nights of Backup',
 ]);
 const description = metaFromParts([
   'A CPAP draws 30–60W without the humidifier, 70–100W with it.',
-  'Nights of backup for 26 power stations, on AC and on 12V DC.',
-  'Plus what the inverter and idle draw cost you.',
+  `Nights of backup for ${count} verified power stations, on AC and 12V DC.`,
+  'Plus inverter loss and UPS passthrough.',
 ]);
 
 const schema = {
@@ -52,7 +49,7 @@ const schema = {
       author: { '@type': 'Organization', name: 'WattLibrary' },
       publisher: { '@type': 'Organization', name: 'WattLibrary' },
       datePublished: '2026-09-19',
-      dateModified: '2026-09-19',
+      dateModified: db.updated,
     },
     {
       '@type': 'BreadcrumbList',
@@ -71,7 +68,7 @@ const faq = [
   },
   {
     q: 'Does the humidifier really cost that much battery?',
-    a: 'It is a heater, so yes. Running a full-size machine with the heated humidifier and heated tube roughly doubles the draw, from about 40W to about 85W, which cuts the nights on a given pack by more than half. A hose cover and switching the humidifier off for the outage nights is the cheapest capacity upgrade there is.',
+    a: 'It is a heater, so yes. Running a full-size machine with the heated humidifier and heated tube roughly doubles the draw, from about 40W to about 85W, which cuts the nights on a given pack by more than half. A hose cover and switching the humidifier off for outage nights is the cheapest capacity upgrade there is.',
   },
   {
     q: 'Is it better to plug the machine into AC or use a 12V DC cord?',
@@ -87,10 +84,10 @@ const faq = [
   },
 ];
 ---
-<Base {title} {description} {schema}>
+<Base {title} {description} {schema} ogType="article">
   <nav class="crumbs"><a href="/guides/">Guides</a> › Power station for a CPAP</nav>
   <h1>How long will a power station run a CPAP?</h1>
-  <p class="lead">The useful number is nights, not watt-hours. Below is that number for all {stations.length} models in the database, at three realistic settings — because the humidifier and the inverter between them decide most of the answer.</p>
+  <p class="lead">The useful number is nights, not watt-hours. Below is that number for all {count} verified models in the database, at three realistic settings — because the humidifier and the inverter between them decide most of the answer.</p>
 
   <div class="kpis">
     <div class="kpi"><b>40 W</b> machine only</div>
@@ -103,16 +100,17 @@ const faq = [
   <p>A full-size machine at a typical pressure of 7–12 cmH₂O draws 30–60W with the humidifier off. Turn on the heated humidifier and the heated tube and that climbs to 70–100W, because both are heating elements and a heating element does not get efficient. Travel machines like the AirMini sit at 5–20W, but they have no traditional humidifier to feed.</p>
   <p>Pressure matters less than people expect, and leaks matter more: a mask leaking badly makes the blower work harder all night. The figures below use 40W for a machine with the humidifier off and 85W with it on — the middle of each published range.</p>
 
-  <div class="note"><b>Check your own brick.</b> The power supply's label gives you the ceiling, not the average — an AirSense 10 ships with a 90W supply but averages around 53W in use. The number you want is on the machine's manual page, or on a plug-in meter if you have one.</div>
+  <div class="note"><b>Check your own brick.</b> The power supply's label gives you the ceiling, not the average — an AirSense 10 ships with a 90W supply but averages around 53W in use. Plug your measured wattage into our <a href="/calculator/">Runtime Calculator</a> for exact nights on every model.</div>
 
-  <h2>Nights of backup, all {stations.length} models</h2>
-  <p class="muted">Nights of {CPAP_HOURS_PER_NIGHT} hours. The DC column assumes a 12V cord straight from the station's car socket; the AC columns go through the inverter.</p>
+  <h2>Nights of backup, all {count} models</h2>
+  <p class="muted">Nights of {CPAP_HOURS_PER_NIGHT} hours (rounded down). The DC column assumes a 12V cord straight from the station's car socket; the AC columns go through the inverter.</p>
 
-  <div class="tbl"><div class="tbl-scroll"><table>
+  <div class="tbl tbl-sticky"><div class="tbl-scroll"><table>
     <thead>
       <tr>
         <th>Model</th>
         <th>Capacity</th>
+        <th>Weight</th>
         {CPAP_LOADS.map((l) => <th>{l.label}</th>)}
       </tr>
     </thead>
@@ -121,6 +119,7 @@ const faq = [
         <tr>
           <td><a href={`/power-stations/${r.s.slug}/`}>{fullName(r.s)}</a></td>
           <td>{r.s.capacity_wh.toLocaleString()} Wh</td>
+          <td>{kgToLbs(r.s.weight_kg)} lbs</td>
           {CPAP_LOADS.map((l) => (
             <td>{formatNights(r.nights[l.key]) ?? '—'}</td>
           ))}
@@ -167,15 +166,15 @@ const faq = [
     <>
       <h2>If the machine stays plugged in at home</h2>
       <p>For grid outages the useful feature is UPS passthrough: the station sits between the wall and the machine and takes over when the power drops. {upsModels.length} models here switch in 20 ms or less —{' '}
-        {upsModels.slice(0, 5).map((s, i) => (
+        {upsModels.slice(0, 6).map((s, i) => (
           <>{i > 0 ? ', ' : ''}<a href={`/power-stations/${s.slug}/`}>{fullName(s)}</a> ({s.ups_switchover_ms} ms)</>
-        ))}{upsModels.length > 5 ? ', among others' : ''}.
+        ))}{upsModels.length > 6 ? ', among others' : ''}. See the full <a href={GUIDE_URLS.ups}>UPS switchover comparison</a>.
       </p>
     </>
   )}
 
   <h2>How we calculated this</h2>
-  <p>Capacity × efficiency ÷ watts ÷ 8 hours. Efficiency is 85% through the AC inverter and 95% on the DC socket, and the capacity is the manufacturer's rated figure, which is measured at the cells rather than at the outlet. Every number here is therefore an estimate built from published specifications, not something we measured with a meter on a real machine — where a figure would need a measurement to be honest, we say so rather than round it up.</p>
+  <p>Capacity × efficiency ÷ watts ÷ 8 hours, rounded down. Efficiency is 85% through the AC inverter and 95% on the DC socket, and the capacity is the manufacturer's rated figure. These are specification-based estimates rather than bench measurements.</p>
 
   <h2>FAQ</h2>
   {faq.map((f) => (
@@ -185,7 +184,11 @@ const faq = [
     </details>
   ))}
 
+  <p style="margin-top:1.4rem;">
+    More guides: <a href={GUIDE_URLS.fridge}>Refrigerator</a> · <a href={GUIDE_URLS.starlink}>Starlink</a> · <a href={GUIDE_URLS.ups}>Home office UPS</a> · <a href="/calculator/">Runtime Calculator →</a>
+  </p>
+
   <div class="disclosure">
-    Draw ranges compiled from CPAP manufacturer and retailer documentation (<a href="https://www.cpap.com/blogs/cpap-therapy/using-cpap-in-rv" rel="nofollow noopener">source</a>). Station specifications come from each manufacturer's own documentation — see the <a href="/power-stations/">database</a> and <a href="/about/">methodology</a>. This page is about power, not therapy: settings are between you and your clinician.
+    Draw ranges compiled from CPAP manufacturer and retailer documentation (<a href="https://www.cpap.com/blogs/cpap-therapy/using-cpap-in-rv" rel="nofollow noopener">source</a>). Station specifications verified ({db.updated}) from manufacturer documentation — see the <a href="/power-stations/">database</a> and <a href="/about/">methodology</a>. This page is about power, not therapy: settings are between you and your clinician.
   </div>
 </Base>

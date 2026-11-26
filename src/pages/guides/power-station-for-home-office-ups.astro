@@ -1,0 +1,156 @@
+---
+import Base from '../../layouts/Base.astro';
+import db from '../../data/power_stations.json';
+import { fullName, metaFromParts, pickTitle, GUIDE_URLS } from '../../lib/utils.js';
+import { OFFICE_LOADS, hoursOnLoad, formatSpan } from '../../lib/guides.js';
+
+const stations = [...db.power_stations].sort(
+  (a, b) => (a.ups_switchover_ms ?? 9999) - (b.ups_switchover_ms ?? 9999) || a.capacity_wh - b.capacity_wh
+);
+const count = stations.length;
+
+const ups10 = stations.filter((s) => s.ups_switchover_ms && s.ups_switchover_ms <= 10);
+const ups20 = stations.filter((s) => s.ups_switchover_ms && s.ups_switchover_ms > 10 && s.ups_switchover_ms <= 20);
+const eps30 = stations.filter((s) => s.ups_switchover_ms && s.ups_switchover_ms > 20);
+const noUps = stations.filter((s) => !s.ups_switchover_ms);
+
+const rows = stations.map((s) => {
+  const ms = s.ups_switchover_ms;
+  const upsTier = !ms ? 'none' : ms <= 10 ? 'fast' : ms <= 20 ? 'med' : 'eps';
+  return {
+    s,
+    upsTier,
+    hours: Object.fromEntries(OFFICE_LOADS.map((l) => [l.key, hoursOnLoad(s, l.watts, l.efficiency)])),
+  };
+});
+
+const title = pickTitle([
+  `Power Station for Home Office & Desktop UPS (${count} Models)`,
+  'Power Station for Home Office & Desktop PC UPS',
+]);
+const description = metaFromParts([
+  `${ups10.length} models switch in ≤10ms (safe for desktop PCs), ${ups20.length} in 15–20ms.`,
+  `UPS switchover times and work-from-home runtimes across all ${count} verified stations.`,
+]);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      headline: 'Power stations for home office & desktop UPS backup',
+      description,
+      url: new URL(Astro.url.pathname, Astro.site).href,
+      author: { '@type': 'Organization', name: 'WattLibrary' },
+      publisher: { '@type': 'Organization', name: 'WattLibrary' },
+      datePublished: '2026-11-26',
+      dateModified: db.updated,
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Guides', item: new URL('/guides/', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: 'Home office & desktop UPS' },
+      ],
+    },
+  ],
+};
+
+const faq = [
+  {
+    q: 'Why does 10ms vs 30ms UPS switchover matter for a desktop PC?',
+    a: 'Modern ATX power supplies hold charge in their internal capacitors for roughly 16–20 milliseconds (the ATX "hold-up time" spec). A 10ms UPS switches to battery before those capacitors drain, keeping your PC running uninterrupted. A 30ms EPS switchover leaves a gap longer than most PSUs can bridge, causing an instant reboot.',
+  },
+  {
+    q: 'Do laptops and Wi-Fi routers need 10ms UPS?',
+    a: 'Laptops have their own battery so switchover time does not matter for them. Most routers, modems, and NAS power bricks tolerate 15–20ms without rebooting, though 10ms is strictly safer for NAS arrays and fiber ONT boxes.',
+  },
+  {
+    q: 'Can I leave a LiFePO4 power station plugged in 24/7 as a UPS?',
+    a: 'Yes, modern LiFePO4 stations support AC passthrough, meaning wall power feeds your desk directly until an outage occurs. For best battery longevity, use the companion app to cap charge state at 80–90% if you keep it plugged in year-round, and remember the station itself draws 10–20W of standby overhead.',
+  },
+  {
+    q: 'How is a power station different from a standard APC/CyberPower UPS?',
+    a: 'A $150 lead-acid desktop UPS gives you 5–15 minutes to save your work and shut down. A 1,000Wh LiFePO4 power station with 10ms UPS gives you 4+ hours on a 200W desktop setup — or a full 11-hour workday on a laptop + monitor + router — and lasts 3,000–4,000 cycles instead of needing new lead-acid batteries every 3 years.',
+  },
+];
+---
+<Base {title} {description} {schema} ogType="article">
+  <nav class="crumbs"><a href="/guides/">Guides</a> › Home office &amp; UPS backup</nav>
+  <h1>Power stations for home office &amp; desktop UPS backup</h1>
+  <p class="lead">
+    Traditional lead-acid UPS boxes buy you ten minutes to shut down. A modern LiFePO4 power station with fast passthrough
+    lets you finish the workday — provided its switchover time is actually fast enough to keep your PC from rebooting.
+  </p>
+
+  <div class="kpis">
+    <div class="kpi"><b>{ups10.length} models</b> ≤10 ms (PC-grade UPS)</div>
+    <div class="kpi"><b>{ups20.length} models</b> 15–20 ms (router / CPAP)</div>
+    <div class="kpi"><b>{eps30.length} models</b> 30 ms EPS (too slow for PCs)</div>
+    <div class="kpi"><b>{noUps.length} models</b> no UPS passthrough</div>
+  </div>
+
+  <h2>10ms vs 20ms vs 30ms: which tier do you need?</h2>
+  <ul>
+    <li><strong>≤10 ms ({ups10.length} models):</strong> Safe for desktop PCs with Active PFC power supplies, workstations, NAS boxes, and monitors. Includes compact desk picks like the <a href="/power-stations/ecoflow-river-3-plus/">EcoFlow RIVER 3 Plus</a> and <a href="/power-stations/anker-solix-c300/">Anker SOLIX C300</a>, plus 1–2kWh leaders like the <a href="/power-stations/anker-solix-c1000-gen-2/">Anker SOLIX C1000 Gen 2</a>, <a href="/power-stations/bluetti-elite-100-v2/">Bluetti Elite 100 V2</a>, <a href="/power-stations/ecoflow-delta-3-plus/">EcoFlow DELTA 3 Plus</a>, and <a href="/power-stations/dji-power-2000/">DJI Power 2000</a>.</li>
+    <li><strong>15–20 ms ({ups20.length} models):</strong> Fine for Wi-Fi routers, cable/fiber modems, CPAP machines, and laptops. Many mid-range desktops survive 20ms, but high-load gaming PSUs sometimes trip.</li>
+    <li><strong>30 ms EPS ({eps30.length} models):</strong> Fine for refrigerators, lamps, and laptops, but unreliable for desktop PCs — treat 30ms as emergency backup, not a computer UPS.</li>
+  </ul>
+
+  <h2>UPS switchover &amp; home office runtimes ({count} models)</h2>
+  <p class="muted">Sorted fastest switchover first. Runtimes assume 85% AC inverter efficiency, rounded down. Note: check AC bypass wattage if running a high-draw workstation.</p>
+
+  <div class="tbl tbl-sticky"><div class="tbl-scroll"><table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>UPS switchover</th>
+        <th>Capacity</th>
+        <th>USB-C</th>
+        {OFFICE_LOADS.map((l) => <th>{l.label}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr>
+          <td><a href={`/power-stations/${r.s.slug}/`}>{fullName(r.s)}</a></td>
+          <td>
+            {r.upsTier === 'none' && <span class="badge badge-bad">None</span>}
+            {r.upsTier === 'fast' && <span class="badge badge-ok">{r.s.ups_switchover_ms} ms</span>}
+            {r.upsTier === 'med' && <span class="badge badge-warn">{r.s.ups_switchover_ms} ms</span>}
+            {r.upsTier === 'eps' && <span class="muted">{r.s.ups_switchover_ms} ms (EPS)</span>}
+          </td>
+          <td>{r.s.capacity_wh.toLocaleString()} Wh</td>
+          <td>{r.s.usb_c_max_w} W</td>
+          {OFFICE_LOADS.map((l) => (
+            <td>{formatSpan(r.hours[l.key]) ?? <span class="muted">Exceeds AC</span>}</td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table></div></div>
+
+  <h2>Three desk-setup details spec sheets gloss over</h2>
+  <h3>Fan noise under light load</h3>
+  <p>A power station sitting beside your desk needs quiet cooling. Look for units rated under 30dB at low load — notably the <a href="/power-stations/dji-power-1000/">DJI Power 1000</a> (23dB), <a href="/power-stations/dji-power-2000/">DJI Power 2000</a> (&lt;29dB), <a href="/power-stations/ecoflow-river-3-plus/">EcoFlow RIVER 3 Plus</a> (&lt;30dB), and <a href="/power-stations/bluetti-elite-100-v2/">Bluetti Elite 100 V2</a> (30dB).</p>
+  <h3>USB-C PD for laptops saves battery</h3>
+  <p>If your laptop charges over USB-C, plugging into a 100W or 140W USB-C PD port skips the AC inverter and external charger brick, stretching a workday by 10–20%.</p>
+  <h3>Battery health in 24/7 UPS service</h3>
+  <p>Keeping lithium cells pinned at 100% indefinitely accelerates calendar aging. Set the app's max charge limit to 80–90% for daily UPS duty and top up to 100% only before storms.</p>
+
+  <h2>FAQ</h2>
+  {faq.map((f) => (
+    <details class="faq">
+      <summary>{f.q}</summary>
+      <div>{f.a}</div>
+    </details>
+  ))}
+
+  <p style="margin-top:1.4rem;">
+    More guides: <a href={GUIDE_URLS.starlink}>Starlink</a> · <a href={GUIDE_URLS.cpap}>CPAP</a> · <a href={GUIDE_URLS.fridge}>Refrigerator</a> · <a href="/calculator/">Custom Runtime Calculator →</a>
+  </p>
+
+  <div class="disclosure">
+    UPS switchover ratings verified ({db.updated}) from manufacturer documentation. Always test your specific PC power supply under load by unplugging the station's wall cord before relying on it for unsaved work.
+  </div>
+</Base>

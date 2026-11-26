@@ -1,35 +1,72 @@
 ---
 import Base from '../layouts/Base.astro';
-const title = 'About WattLibrary';
-const description = 'What WattLibrary is, where the specs come from, and how runtime estimates are calculated.';
+import db from '../data/power_stations.json';
+
+const count = db.power_stations.length;
+const title = 'About WattLibrary — Sources & Runtime Methodology';
+const description = 'How WattLibrary verifies portable power station specifications, calculates AC and DC runtimes, and stays 100% independent.';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'AboutPage',
+      name: title,
+      description,
+      url: new URL(Astro.url.pathname, Astro.site).href,
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: 'About' },
+      ],
+    },
+  ],
+};
 ---
-<Base {title} {description}>
+<Base {title} {description} {schema}>
+  <nav class="crumbs"><a href="/">Home</a> › About</nav>
   <h1>About WattLibrary</h1>
-  <p style="max-width:660px;">
+  <p style="max-width:680px;">
     This site started with a spreadsheet. Comparing power stations meant keeping fifteen browser tabs open, because every brand
     reports its numbers differently: one quotes surge wattage in the headline, another buries it in a PDF manual, a third
-    invents its own name for boost mode. The spreadsheet kept growing until it made more sense to publish it.
+    invents its own name for voltage-dropping boost mode. The spreadsheet kept growing until it made more sense to publish it.
   </p>
+
   <h2>Where the numbers come from</h2>
-  <p style="max-width:660px;">
-    Manufacturer documentation, first and foremost: product pages, spec sheets, user manuals. Each listing links to its source.
-    Where sources contradict each other (it happens more than you'd expect, sometimes on the manufacturer's own site), the
-    listing is held back until we can resolve the conflict, and the discrepancy is noted.
+  <p style="max-width:680px;">
+    Manufacturer documentation, first and foremost: US product pages, technical spec sheets, and PDF user manuals. Every listing
+    in our {count}-model database is checked against official specs (last full verification: {db.updated}) and links directly to its
+    manufacturer source. Where regional variants differ (for example US 120V AC outlet counts vs EU 230V versions), we standardize
+    on US 120V specifications.
   </p>
-  <h2>How runtime estimates work</h2>
-  <p style="max-width:660px;">
-    One formula, shown in the open: battery capacity, times 85% inverter efficiency, divided by the appliance's average draw.
-    It's deliberately conservative. Compressor appliances like refrigerators cycle on and off, so real-world numbers usually
-    come out better than our table. We'd rather you be pleasantly surprised than caught short during an outage.
+
+  <h2>How runtime &amp; solar estimates work</h2>
+  <p style="max-width:680px;">
+    Every model page, comparison table, guide, and calculator on WattLibrary uses one shared math model — rounded <strong>down</strong>
+    so estimates stay honest rather than flattering:
   </p>
+  <ul style="max-width:680px;">
+    <li><strong>AC loads:</strong> <code>capacity_wh × 0.85 ÷ average_watts</code>. The 85% factor accounts for typical pure sine wave inverter conversion losses.</li>
+    <li><strong>12V DC / USB-C loads (CPAP DC, Starlink Mini DC):</strong> <code>capacity_wh × 0.95 ÷ average_watts</code>, since bypassing the AC inverter avoids most conversion loss.</li>
+    <li><strong>Compressor appliances (refrigerators &amp; freezers):</strong> Evaluated on two separate tests — a startup surge check against the station's surge rating (e.g., 900W for a full-size fridge) plus a 24-hour duty-cycled average draw (60W for a full-size fridge, consistent with EnergyGuide kWh/year labels). If a station cannot start the compressor, it gets no runtime credit regardless of battery size.</li>
+    <li><strong>Solar recharge hours:</strong> <code>capacity_wh ÷ (min(panel_watts, max_solar_input) × 0.78)</code>, accounting for real-world panel harvest and MPPT losses rather than idealized lab numbers.</li>
+  </ul>
+  <p style="max-width:680px;">
+    You can plug your own wattages and solar panel ratings into the <a href="/calculator/">Runtime &amp; Solar MPPT Calculator</a>, or browse the
+    <a href="/guides/">worked appliance guides</a> to see the numbers across every station.
+  </p>
+
   <h2>Independence</h2>
-  <p style="max-width:660px;">
+  <p style="max-width:680px;">
     No ads, no affiliate links, no sponsored placements. No brand pays to be listed and no brand can pay to change its numbers.
     If that ever changes, the disclosure will be on every affected page, not buried here.
   </p>
+
   <h2>Corrections</h2>
-  <p style="max-width:660px;">
-    Spotted a wrong number? Tell us: hello@wattlibrary.com. Verified corrections ship within a day, and honestly, we're
-    grateful for them. A database is only worth its accuracy.
+  <p style="max-width:680px;">
+    Spotted a wrong number or a spec revision? Email us at <a href="mailto:hello@wattlibrary.com">hello@wattlibrary.com</a>.
+    Verified corrections ship within 24 hours, and we're genuinely grateful for them — a database is only worth its accuracy.
   </p>
 </Base>

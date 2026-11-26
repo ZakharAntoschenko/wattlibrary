@@ -2,38 +2,212 @@
 import Base from '../../layouts/Base.astro';
 import db from '../../data/power_stations.json';
 import pairsData from '../../data/compare_pairs.json';
-import { fullName, capacityClass } from '../../lib/utils.js';
+import { fullName, capacityClass, metaFromParts } from '../../lib/utils.js';
 import { pairSlug } from '../../lib/compare.js';
 
+const stations = [...db.power_stations].sort((a, b) => fullName(a).localeCompare(fullName(b)));
 const bySlug = Object.fromEntries(db.power_stations.map((s) => [s.slug, s]));
-const pairs = pairsData.pairs.map((p) => ({ a: bySlug[p.a], b: bySlug[p.b] }));
+const indexedPairs = pairsData.pairs
+  .filter((p) => p.index === true)
+  .map((p) => ({ a: bySlug[p.a], b: bySlug[p.b], verdict: p.verdict }))
+  .filter((p) => p.a && p.b);
 
 const groups = {};
-for (const p of pairs) {
+for (const p of indexedPairs) {
   const g = capacityClass(Math.min(p.a.capacity_wh, p.b.capacity_wh));
   (groups[g] ??= []).push(p);
 }
 
-const title = `Power Station Comparisons: ${pairs.length} Head-to-Head Matchups`;
-const description = `Side-by-side spec comparisons of popular power stations — EcoFlow, Anker, Bluetti, Jackery — with per-row winners and data-driven verdicts.`;
+// Lookup map for curated URLs (either A-vs-B or B-vs-A)
+const curatedLookup = {};
+for (const p of pairsData.pairs) {
+  const url = `/compare/${p.a}-vs-${p.b}/`;
+  curatedLookup[`${p.a}|${p.b}`] = { url, curated: p.index === true };
+  curatedLookup[`${p.b}|${p.a}`] = { url, curated: p.index === true };
+}
+
+const title = `Compare Any Two Power Stations (${stations.length} Verified Models)`;
+const description = metaFromParts([
+  `Compare any two of ${stations.length} portable power stations side by side — specs, fridge & CPAP runtimes, solar recharge, and ${indexedPairs.length} in-depth matchups.`,
+]);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'CollectionPage',
+      name: title,
+      description,
+      url: new URL(Astro.url.pathname, Astro.site).href,
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: 'Comparisons' },
+      ],
+    },
+  ],
+};
 ---
-<Base {title} {description}>
-  <h1>Head-to-head comparisons</h1>
-  <p class="muted">Every comparison is generated from the same database, so the numbers are consistent across pages — no cherry-picking.</p>
+<Base {title} {description} {schema}>
+  <nav class="crumbs"><a href="/">Home</a> › Comparisons</nav>
+  <h1>Head-to-head power station comparisons</h1>
+  <p class="lead">
+    Pick any two models from our {stations.length}-station database for an instant side-by-side spec and runtime breakdown,
+    or read our {indexedPairs.length} curated matchups below.
+  </p>
+
+  <div class="tool-panel">
+    <h2 style="margin-top:0; font-size:1.15rem;">Compare any two models live</h2>
+    <div class="tool-row">
+      <div class="field">
+        <label for="cmp-a">Station A</label>
+        <select id="cmp-a">
+          {stations.map((s) => (
+            <option value={s.slug} selected={s.slug === 'anker-solix-c1000-gen-2'}>
+              {fullName(s)} ({s.capacity_wh.toLocaleString()}Wh · {s.ac_output_w.toLocaleString()}W)
+            </option>
+          ))}
+        </select>
+      </div>
+      <div class="field">
+        <label for="cmp-b">Station B</label>
+        <select id="cmp-b">
+          {stations.map((s) => (
+            <option value={s.slug} selected={s.slug === 'ecoflow-delta-3-plus'}>
+              {fullName(s)} ({s.capacity_wh.toLocaleString()}Wh · {s.ac_output_w.toLocaleString()}W)
+            </option>
+          ))}
+        </select>
+      </div>
+      <button type="button" id="cmp-swap" class="btn btn-ghost btn-sm">Swap ↔</button>
+    </div>
+    <p id="cmp-link-bar" style="margin:.75rem 0 0; font-size:.88rem;"></p>
+  </div>
+
+  <div id="live-compare-out"></div>
+
+  <h2>Curated head-to-head reviews ({indexedPairs.length})</h2>
+  <p class="muted">Every curated matchup includes a written verdict, side-by-side specs, and modeled appliance runtimes from the same database.</p>
 
   {Object.entries(groups).map(([group, list]) => (
     <>
-      <h2>{group}</h2>
+      <h3>{group}</h3>
       <div class="grid">
         {list.map((p) => (
           <div class="card">
             <a href={`/compare/${pairSlug(p.a, p.b)}/`}>{fullName(p.a)} vs {fullName(p.b)}</a>
-            <p class="muted" style="margin:0.3rem 0 0; font-size:0.85rem;">
-              {p.a.capacity_wh.toLocaleString()}Wh vs {p.b.capacity_wh.toLocaleString()}Wh
+            <p class="sub">
+              {p.a.capacity_wh.toLocaleString()}Wh vs {p.b.capacity_wh.toLocaleString()}Wh · {p.a.ac_output_w.toLocaleString()}W vs {p.b.ac_output_w.toLocaleString()}W
             </p>
           </div>
         ))}
       </div>
     </>
   ))}
+
+  <script define:vars={{ stationsData: db.power_stations, curatedLookup }}>
+    const map = Object.fromEntries(stationsData.map((s) => [s.slug, s]));
+    const selA = document.getElementById('cmp-a');
+    const selB = document.getElementById('cmp-b');
+    const linkBar = document.getElementById('cmp-link-bar');
+    const out = document.getElementById('live-compare-out');
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('a') && map[params.get('a')]) selA.value = params.get('a');
+    if (params.get('b') && map[params.get('b')]) selB.value = params.get('b');
+    if (selA.value === selB.value) {
+      const alt = stationsData.find((x) => x.slug !== selA.value);
+      if (alt) selB.value = alt.slug;
+    }
+
+    const fn = (s) => `${s.brand} ${s.model}`;
+    const lbs = (kg) => (kg * 2.20462).toFixed(1);
+    const fmtH = (h) => {
+      if (h === null) return "Can't start";
+      if (h >= 48) return `${Math.floor((h / 24) * 10) / 10} days`;
+      if (h >= 10) return `${Math.floor(h)} hours`;
+      if (h >= 1) return `${Math.floor(h * 10) / 10} hours`;
+      return `${Math.floor(h * 60)} min`;
+    };
+    const cmp = (a, b, dir) => (a === b ? 0 : (a > b ? 1 : -1) * dir);
+
+    function render() {
+      const a = map[selA.value];
+      const b = map[selB.value];
+      if (!a || !b) return;
+      if (a.slug === b.slug) {
+        out.innerHTML = '<p class="note">Select two different stations above to compare them side by side.</p>';
+        linkBar.innerHTML = '';
+        return;
+      }
+
+      const key = `${a.slug}|${b.slug}`;
+      const match = curatedLookup[key];
+      const shareUrl = `${window.location.origin}/compare/?a=${encodeURIComponent(a.slug)}&b=${encodeURIComponent(b.slug)}`;
+      linkBar.innerHTML = match && match.curated
+        ? `We have a full written verdict for this matchup: <a href="${match.url}"><b>Read ${fn(a)} vs ${fn(b)} →</b></a>`
+        : `<span class="muted">Live comparison · Shareable link:</span> <a href="${shareUrl}">?a=${a.slug}&amp;b=${b.slug}</a>`;
+
+      const fridgeA = a.ac_surge_w >= 900 && a.ac_output_w >= 150 ? (a.capacity_wh * 0.85) / 60 : null;
+      const fridgeB = b.ac_surge_w >= 900 && b.ac_output_w >= 150 ? (b.capacity_wh * 0.85) / 60 : null;
+      const cpapA = Math.floor(((a.capacity_wh * 0.85) / 40 / 8) * 10) / 10;
+      const cpapB = Math.floor(((b.capacity_wh * 0.85) / 40 / 8) * 10) / 10;
+      const starA = (a.capacity_wh * 0.85) / 55;
+      const starB = (b.capacity_wh * 0.85) / 55;
+      const solA = +(a.capacity_wh / (a.solar_input_w * 0.78)).toFixed(1);
+      const solB = +(b.capacity_wh / (b.solar_input_w * 0.78)).toFixed(1);
+      const dpwA = a.msrp_usd / a.capacity_wh;
+      const dpwB = b.msrp_usd / b.capacity_wh;
+
+      const rows = [
+        ['Battery capacity', `${a.capacity_wh.toLocaleString()} Wh`, `${b.capacity_wh.toLocaleString()} Wh`, cmp(a.capacity_wh, b.capacity_wh, 1)],
+        ['Chemistry & cycles', `${a.chemistry} · ${a.cycles_to_80pct.toLocaleString()}`, `${b.chemistry} · ${b.cycles_to_80pct.toLocaleString()}`, cmp(a.cycles_to_80pct, b.cycles_to_80pct, 1)],
+        ['AC continuous / surge', `${a.ac_output_w.toLocaleString()}W / ${a.ac_surge_w.toLocaleString()}W`, `${b.ac_output_w.toLocaleString()}W / ${b.ac_surge_w.toLocaleString()}W`, cmp(a.ac_output_w, b.ac_output_w, 1)],
+        ['Max solar input', `${a.solar_input_w.toLocaleString()} W (${a.solar_voltage_range})`, `${b.solar_input_w.toLocaleString()} W (${b.solar_voltage_range})`, cmp(a.solar_input_w, b.solar_input_w, 1)],
+        ['Solar 0–100% (max input)', `${solA} sun hrs`, `${solB} sun hrs`, cmp(solA, solB, -1)],
+        ['AC recharge 0–80%', a.ac_charge_minutes_0_80 ? `${a.ac_charge_minutes_0_80} min` : '—', b.ac_charge_minutes_0_80 ? `${b.ac_charge_minutes_0_80} min` : '—', cmp(a.ac_charge_minutes_0_80 ?? 9999, b.ac_charge_minutes_0_80 ?? 9999, -1)],
+        ['UPS switchover', a.ups_switchover_ms ? `${a.ups_switchover_ms} ms` : 'None', b.ups_switchover_ms ? `${b.ups_switchover_ms} ms` : 'None', cmp(a.ups_switchover_ms ?? 9999, b.ups_switchover_ms ?? 9999, -1)],
+        ['Expandable', a.expandable_max_wh ? `to ${a.expandable_max_wh.toLocaleString()} Wh` : 'No', b.expandable_max_wh ? `to ${b.expandable_max_wh.toLocaleString()} Wh` : 'No', cmp(a.expandable_max_wh ?? 0, b.expandable_max_wh ?? 0, 1)],
+        ['Weight', `${lbs(a.weight_kg)} lbs (${a.weight_kg} kg)`, `${lbs(b.weight_kg)} lbs (${b.weight_kg} kg)`, cmp(a.weight_kg, b.weight_kg, -1)],
+        ['Launch price ($/Wh)', `$${a.msrp_usd.toLocaleString()} ($${dpwA.toFixed(2)}/Wh)`, `$${b.msrp_usd.toLocaleString()} ($${dpwB.toFixed(2)}/Wh)`, cmp(dpwA, dpwB, -1)],
+        ['Full-size fridge (60W avg)', fmtH(fridgeA), fmtH(fridgeB), cmp(fridgeA ?? -1, fridgeB ?? -1, 1)],
+        ['CPAP AC (40W, 8h nights)', `${cpapA} nights`, `${cpapB} nights`, cmp(cpapA, cpapB, 1)],
+        ['Starlink Standard (55W)', fmtH(starA), fmtH(starB), cmp(starA, starB, 1)],
+      ];
+
+      const bodyHtml = rows.map(([lbl, av, bv, w]) => `
+        <tr>
+          <th>${lbl}</th>
+          <td class="${w === 1 ? 'win' : ''}">${av}${w === 1 ? ' ✓' : ''}</td>
+          <td class="${w === -1 ? 'win' : ''}">${bv}${w === -1 ? ' ✓' : ''}</td>
+        </tr>
+      `).join('');
+
+      out.innerHTML = `
+        <div class="tbl"><div class="tbl-scroll"><table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th><a href="/power-stations/${a.slug}/">${fn(a)}</a></th>
+              <th><a href="/power-stations/${b.slug}/">${fn(b)}</a></th>
+            </tr>
+          </thead>
+          <tbody>${bodyHtml}</tbody>
+        </table></div></div>
+      `;
+    }
+
+    selA.addEventListener('change', render);
+    selB.addEventListener('change', render);
+    document.getElementById('cmp-swap').addEventListener('click', () => {
+      const tmp = selA.value;
+      selA.value = selB.value;
+      selB.value = tmp;
+      render();
+    });
+
+    render();
+  </script>
 </Base>

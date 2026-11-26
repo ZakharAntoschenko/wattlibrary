@@ -1,0 +1,154 @@
+---
+import Base from '../../layouts/Base.astro';
+import db from '../../data/power_stations.json';
+import pairsData from '../../data/compare_pairs.json';
+import {
+  brandSlug, BRAND_INFO, fullName, dollarsPerWh, kgToLbs,
+  metaFromParts, pickTitle, GUIDE_URLS,
+} from '../../lib/utils.js';
+
+export function getStaticPaths() {
+  const brands = [...new Set(db.power_stations.map((s) => s.brand))];
+  return brands.map((brand) => ({
+    params: { brand: brandSlug(brand) },
+    props: { brand },
+  }));
+}
+
+const { brand } = Astro.props;
+const all = db.power_stations;
+const bySlug = Object.fromEntries(all.map((s) => [s.slug, s]));
+const models = all.filter((s) => s.brand === brand).sort((a, b) => a.capacity_wh - b.capacity_wh);
+const info = BRAND_INFO[brand];
+
+const whMin = Math.min(...models.map((m) => m.capacity_wh));
+const whMax = Math.max(...models.map((m) => m.capacity_wh));
+const wMax = Math.max(...models.map((m) => m.ac_output_w));
+const lfpCount = models.filter((m) => m.chemistry === 'LFP').length;
+const bestVal = [...models].sort((a, b) => dollarsPerWh(a) - dollarsPerWh(b))[0];
+
+const brandPairs = pairsData.pairs
+  .filter((p) => p.index === true && (bySlug[p.a]?.brand === brand || bySlug[p.b]?.brand === brand))
+  .map((p) => ({
+    url: `/compare/${p.a}-vs-${p.b}/`,
+    a: bySlug[p.a],
+    b: bySlug[p.b],
+  }))
+  .filter((p) => p.a && p.b);
+
+const title = pickTitle([
+  `${brand} Power Stations: ${models.length} Models Specs & Runtimes`,
+  `${brand} Power Stations: All ${models.length} Models Compared`,
+]);
+const description = metaFromParts([
+  `All ${models.length} ${brand} portable power stations (${whMin}–${whMax.toLocaleString()}Wh, up to ${wMax.toLocaleString()}W AC):`,
+  `${lfpCount}/${models.length} LiFePO4, solar MPPT specs, UPS times, and lbs/kg weights.`,
+]);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'CollectionPage',
+      name: title,
+      description,
+      url: new URL(Astro.url.pathname, Astro.site).href,
+    },
+    {
+      '@type': 'ItemList',
+      name: `${brand} Portable Power Stations`,
+      itemListElement: models.map((m, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: fullName(m),
+        url: new URL(`/power-stations/${m.slug}/`, Astro.site).href,
+      })),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Brands', item: new URL('/brands/', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: brand },
+      ],
+    },
+  ],
+};
+---
+<Base {title} {description} {schema}>
+  <nav class="crumbs"><a href="/brands/">Brands</a> › {brand}</nav>
+  <h1>{brand} portable power stations</h1>
+  <p class="lead">{info?.summary}</p>
+
+  <div class="kpis">
+    <div class="kpi"><b>{models.length}</b> verified models</div>
+    <div class="kpi"><b>{whMin}–{whMax.toLocaleString()} Wh</b> capacity span</div>
+    <div class="kpi"><b>{wMax.toLocaleString()} W</b> max AC output</div>
+    <div class="kpi"><b>{lfpCount} of {models.length}</b> LiFePO4</div>
+  </div>
+
+  {info && (
+    <div class="note">
+      <b>Ecosystem &amp; solar note:</b> {info.connectorNote} <b>Strengths:</b> {info.strengths}
+    </div>
+  )}
+
+  <h2>All {brand} models compared</h2>
+  <div class="tbl tbl-sticky"><div class="tbl-scroll"><table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Year</th>
+        <th>Capacity</th>
+        <th>AC / Surge</th>
+        <th>Chemistry</th>
+        <th>Solar in (MPPT)</th>
+        <th>UPS</th>
+        <th>Weight</th>
+        <th>$/Wh*</th>
+      </tr>
+    </thead>
+    <tbody>
+      {models.map((s) => (
+        <tr>
+          <td><a href={`/power-stations/${s.slug}/`}>{fullName(s)}</a></td>
+          <td>{s.release_year}</td>
+          <td>{s.capacity_wh.toLocaleString()} Wh</td>
+          <td>{s.ac_output_w.toLocaleString()}W / {s.ac_surge_w.toLocaleString()}W</td>
+          <td>{s.chemistry} ({s.cycles_to_80pct.toLocaleString()})</td>
+          <td>{s.solar_input_w.toLocaleString()}W ({s.solar_voltage_range})</td>
+          <td>{s.ups_switchover_ms ? `${s.ups_switchover_ms} ms` : <span class="muted">—</span>}</td>
+          <td>{kgToLbs(s.weight_kg)} lbs <span class="muted">({s.weight_kg} kg)</span></td>
+          <td>${dollarsPerWh(s).toFixed(2)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table></div></div>
+  <p class="muted" style="font-size:.84rem;">
+    * Best launch value in the {brand} lineup: <a href={`/power-stations/${bestVal.slug}/`}>{fullName(bestVal)}</a> at ${dollarsPerWh(bestVal).toFixed(2)}/Wh.
+    Need to size a {brand} station for specific loads or check solar Voc? Try the <a href="/calculator/">Runtime &amp; Solar Calculator →</a>
+  </p>
+
+  {brandPairs.length > 0 && (
+    <>
+      <h2>Head-to-head {brand} comparisons</h2>
+      <div class="grid">
+        {brandPairs.map((p) => (
+          <div class="card">
+            <a href={p.url}>{fullName(p.a)} vs {fullName(p.b)}</a>
+            <p class="sub">{p.a.capacity_wh.toLocaleString()}Wh vs {p.b.capacity_wh.toLocaleString()}Wh</p>
+          </div>
+        ))}
+      </div>
+    </>
+  )}
+
+  <h2>See how {brand} performs across real appliances</h2>
+  <p>
+    <a href={GUIDE_URLS.fridge}>Refrigerator guide</a> ·
+    <a href={GUIDE_URLS.cpap}>CPAP guide</a> ·
+    <a href={GUIDE_URLS.starlink}>Starlink guide</a> ·
+    <a href={GUIDE_URLS.ups}>Home office UPS guide</a> ·
+    <a href={GUIDE_URLS.solar}>Solar MPPT guide</a> ·
+    <a href="/brands/">All brands →</a>
+  </p>
+</Base>

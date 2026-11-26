@@ -1,27 +1,53 @@
 ---
 import Base from '../../layouts/Base.astro';
 import db from '../../data/power_stations.json';
-import { metaFromParts } from '../../lib/utils.js';
+import { APPLIANCES, GUIDE_URLS, metaFromParts } from '../../lib/utils.js';
 
 const count = db.power_stations.length;
 
 const guides = [
   {
-    url: '/guides/power-station-for-cpap/',
-    title: 'How long will a power station run a CPAP?',
-    blurb: `Nights of backup for all ${count} models, with the humidifier on and off, and on AC against a 12V DC cord.`,
+    url: GUIDE_URLS.fridge,
+    title: 'How long will a power station run a refrigerator?',
+    blurb: `Which of our ${count} models can start a compressor at all, and how long they feed one once the 24-hour duty cycle is accounted for.`,
+    tag: 'Outage essentials',
   },
   {
-    url: '/guides/power-station-for-refrigerator/',
-    title: 'How long will a power station run a refrigerator?',
-    blurb: 'Which models can start a compressor at all, and how long they feed one once the duty cycle is accounted for.',
+    url: GUIDE_URLS.cpap,
+    title: 'How long will a power station run a CPAP?',
+    blurb: `Nights of backup for all ${count} models, humidifier off vs on, and AC outlet against a 12V DC cord.`,
+    tag: 'Medical backup',
+  },
+  {
+    url: GUIDE_URLS.starlink,
+    title: 'How long will a power station run Starlink?',
+    blurb: `Starlink Mini (DC & AC) and Standard Gen 3 runtimes across all ${count} models, snow-melt penalty, and solar panel sizing.`,
+    tag: 'Off-grid internet',
+  },
+  {
+    url: GUIDE_URLS.ups,
+    title: 'Power stations for home office & desktop UPS backup',
+    blurb: `10ms vs 20ms vs 30ms switchover explained — which stations keep a desktop PC alive when the grid drops, and for how many hours.`,
+    tag: 'UPS & remote work',
+  },
+  {
+    url: GUIDE_URLS.heater,
+    title: 'Can a power station run a space heater?',
+    blurb: `Honest minutes and hours at 750W and 1,500W across all ${count} models, plus why boost-mode voltage tricks don't give you free heat.`,
+    tag: 'High-draw loads',
+  },
+  {
+    url: GUIDE_URLS.solar,
+    title: 'Solar panel compatibility & MPPT voltage guide',
+    blurb: `MPPT voltage windows, cold-weather Voc rise, over-paneling rules, connectors, and full-charge sun hours for every model.`,
+    tag: 'Solar charging',
   },
 ];
 
-const title = 'Power Station Guides: Runtimes for Real Appliances';
+const title = 'Power Station Guides: Runtimes & Solar Math';
 const description = metaFromParts([
-  `Worked runtime guides built from the specifications of ${count} power stations:`,
-  'CPAP machines and refrigerators, with the arithmetic shown.',
+  `Six worked guides built from ${count} verified power stations:`,
+  'refrigerators, CPAPs, Starlink, desktop UPS, space heaters, and solar MPPT sizing.',
 ]);
 
 const schema = {
@@ -37,19 +63,41 @@ const schema = {
         url: new URL(g.url, Astro.site).href,
       })),
     },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: 'Guides' },
+      ],
+    },
   ],
 };
 ---
 <Base {title} {description} {schema}>
-  <h1>Guides</h1>
-  <p class="lead">A spec sheet tells you a pack holds 1,024Wh. It does not tell you whether that is one night of CPAP or three, or whether the unit can start your fridge at all. These guides do the arithmetic across the whole database and show the assumptions behind it.</p>
+  <nav class="crumbs"><a href="/">Home</a> › Guides</nav>
+  <h1>Appliance runtime &amp; solar guides</h1>
+  <p class="lead">
+    A spec sheet tells you a pack holds 1,024Wh. It does not tell you whether that is one night of CPAP or three, whether
+    it can start your fridge compressor, or whether two 200W panels in series will fry its MPPT on a freezing morning.
+    These guides run the exact same transparent math across all {count} models.
+  </p>
 
-  {guides.map((g) => (
-    <>
-      <h2><a href={g.url}>{g.title}</a></h2>
-      <p>{g.blurb}</p>
-    </>
-  ))}
+  <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));">
+    {guides.map((g) => (
+      <div class="card">
+        <span class="pill" style="margin-bottom:.45rem;">{g.tag}</span>
+        <a href={g.url}>{g.title}</a>
+        <p class="sub">{g.blurb}</p>
+      </div>
+    ))}
+  </div>
 
-  <p class="muted">More to come. If there is an appliance you want the numbers for, the <a href="/power-stations/">database</a> has the runtime table for twelve common loads on every model.</p>
+  <div class="note">
+    <b>Combining multiple loads?</b> Use the <a href="/calculator/">interactive Runtime &amp; Solar MPPT Calculator</a> to stack appliances
+    (for example, fridge + Starlink + router for 24 hours) or test your exact solar panel Voc across all {count} stations.
+  </div>
+
+  <p class="muted">
+    Every model page in the <a href="/power-stations/">database</a> also includes a full runtime table covering {APPLIANCES.length} common household loads.
+  </p>
 </Base>

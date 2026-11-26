@@ -1,0 +1,169 @@
+---
+import Base from '../../layouts/Base.astro';
+import db from '../../data/power_stations.json';
+import {
+  fullName, metaFromParts, pickTitle, parseVoltageWindow,
+  solarChargeHours, GUIDE_URLS,
+} from '../../lib/utils.js';
+
+const stations = [...db.power_stations].sort((a, b) => b.solar_input_w - a.solar_input_w || a.capacity_wh - b.capacity_wh);
+const count = stations.length;
+
+const rows = stations.map((s) => {
+  const win = parseVoltageWindow(s.solar_voltage_range);
+  const fullSun = solarChargeHours(s);
+  const with200 = solarChargeHours(s, 200);
+  const with400 = solarChargeHours(s, 400);
+  const voltageTier = win.max >= 100 ? 'high' : win.max <= 32 ? 'tight' : 'mid';
+  return { s, win, fullSun, with200, with400, voltageTier };
+});
+
+const highVoltage = rows.filter((r) => r.win.max >= 100);
+const tightVoltage = rows.filter((r) => r.win.max <= 32);
+const fastestSolar = [...rows].sort((a, b) => (a.fullSun ?? 99) - (b.fullSun ?? 99))[0];
+
+const title = pickTitle([
+  `Solar Panel Compatibility & MPPT Limits (${count} Stations)`,
+  'Power Station Solar Panel Compatibility & MPPT Guide',
+]);
+const description = metaFromParts([
+  `MPPT voltage windows (Voc), connectors, and real solar recharge hours for all ${count} verified power stations.`,
+  'Avoid frying your MPPT with cold-weather Voc rise.',
+]);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      headline: 'Solar panel compatibility & MPPT voltage guide',
+      description,
+      url: new URL(Astro.url.pathname, Astro.site).href,
+      author: { '@type': 'Organization', name: 'WattLibrary' },
+      publisher: { '@type': 'Organization', name: 'WattLibrary' },
+      datePublished: '2026-11-26',
+      dateModified: db.updated,
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Guides', item: new URL('/guides/', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: 'Solar panel compatibility' },
+      ],
+    },
+  ],
+};
+
+const faq = [
+  {
+    q: 'Can I use a third-party solar panel with EcoFlow, Bluetti, Anker, or Jackery?',
+    a: 'Yes — solar panels are brand-agnostic as long as two rules are met: (1) your array\'s cold-weather open-circuit voltage (Voc) stays strictly below the station\'s MPPT max voltage, and (2) you use the right adapter cable (MC4 to XT60, DC8020, DC7909, or DJI SDC MPPT module).',
+  },
+  {
+    q: 'What happens if I exceed the watt limit vs the voltage (Voc) limit?',
+    a: 'Exceeding wattage ("over-paneling") while staying inside the voltage window is generally safe: the MPPT controller simply clips current at its rated amps, which helps harvest more power on cloudy days. Exceeding the maximum voltage (Voc) is NOT safe — it can trip protection or permanently fry the MPPT input.',
+  },
+  {
+    q: 'Why does cold weather matter for solar panel voltage?',
+    a: 'Solar panel Voc rises as cell temperature drops — roughly +0.35% for every 1°C below 25°C (77°F). Two 200W panels wired in series with 28V Voc each (56V total) fit a 60V MPPT in summer, but climb to ~62V at freezing temperatures (32°F/0°C) — exceeding the 60V ceiling.',
+  },
+  {
+    q: 'Why do solar recharge estimates use 78% instead of 100% panel wattage?',
+    a: 'Solar panels are rated under Standard Test Conditions (1,000 W/m² at 25°C cell temp). Outdoors, panel heating, sun angle, and MPPT conversion typically deliver ~75–80% of nameplate watts even in clear midday sun.',
+  },
+];
+
+const fmtH = (h) => (h ? `${(Math.ceil(h * 10) / 10).toFixed(1)} h` : '—');
+---
+<Base {title} {description} {schema} ogType="article">
+  <nav class="crumbs"><a href="/guides/">Guides</a> › Solar panel compatibility</nav>
+  <h1>Solar panel compatibility &amp; MPPT voltage guide</h1>
+  <p class="lead">
+    You do not need brand-matched solar panels to charge a portable power station — you need to respect the MPPT voltage window.
+    Here are the exact solar input ceilings, voltage limits, connectors, and real-world sun hours for all {count} verified models.
+  </p>
+
+  <div class="kpis">
+    <div class="kpi"><b>Voc ≤ Max V</b> hard safety rule</div>
+    <div class="kpi"><b>+0.35% / °C</b> cold-weather Voc rise</div>
+    <div class="kpi"><b>{highVoltage.length} models</b> accept 100V+ arrays</div>
+    <div class="kpi"><b>{tightVoltage.length} models</b> capped at ≤32V</div>
+  </div>
+
+  <div class="note">
+    <b>Have panels already?</b> Plug your panel's <code>Voc</code>, wattage, series/parallel count, and coldest morning temperature into our
+    <a href="/calculator/#solar"><b>Interactive Solar MPPT Voc Checker →</b></a> to test every model automatically.
+  </div>
+
+  <h2>Two rules that prevent damaged hardware</h2>
+  <h3>1. Voltage (Voc) is a hard ceiling; wattage is a soft cap</h3>
+  <p>
+    Never connect an array whose open-circuit voltage (<strong>Voc</strong>) can exceed the station's maximum MPPT voltage —
+    especially on crisp winter mornings when cold cells push Voc 10–15% higher than the sticker rating. By contrast, connecting
+    a 400W panel to a 300W input is normally fine (often called <em>over-paneling</em>) as long as Voc stays safely inside the window.
+  </p>
+  <h3>2. Series adds voltage; parallel adds amps</h3>
+  <p>
+    Wiring two 22V / 200W panels in <strong>series</strong> gives 44V / 400W — ideal for a 60V MPPT (high voltage reduces cable loss),
+    but fatal for a 28–30V small-class input like the <a href="/power-stations/bluetti-eb3a/">Bluetti EB3A</a> or <a href="/power-stations/ecoflow-river-3/">EcoFlow RIVER 3</a>.
+    Wiring them in <strong>parallel</strong> keeps voltage at 22V while doubling current (clipped if above the port's amp limit).
+  </p>
+
+  <h2>MPPT limits &amp; solar recharge hours, all {count} models</h2>
+  <p class="muted">Sorted by max solar input. Recharge hours assume 78% real-world harvest (STC derate + MPPT efficiency) in full peak sun.</p>
+
+  <div class="tbl tbl-sticky"><div class="tbl-scroll"><table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Max Solar</th>
+        <th>MPPT Window</th>
+        <th>Connector</th>
+        <th>0–100% at Max</th>
+        <th>With 200W Panel</th>
+        <th>With 400W Array</th>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr>
+          <td><a href={`/power-stations/${r.s.slug}/`}>{fullName(r.s)}</a></td>
+          <td><b>{r.s.solar_input_w.toLocaleString()} W</b></td>
+          <td>
+            {r.voltageTier === 'high' && <span class="badge badge-ok">{r.s.solar_voltage_range}</span>}
+            {r.voltageTier === 'tight' && <span class="badge badge-warn">{r.s.solar_voltage_range}</span>}
+            {r.voltageTier === 'mid' && r.s.solar_voltage_range}
+          </td>
+          <td>{r.s.dc_input_connector}</td>
+          <td>{fmtH(r.fullSun)}</td>
+          <td>{fmtH(r.with200)}</td>
+          <td>{fmtH(r.with400)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table></div></div>
+
+  <h2>Standouts &amp; caveats in the database</h2>
+  <ul>
+    <li><strong>Fastest solar refill ratio:</strong> The <a href={`/power-stations/${fastestSolar.s.slug}/`}>{fullName(fastestSolar.s)}</a> refills 0–100% in roughly <b>{fmtH(fastestSolar.fullSun)}</b> of peak sun at its {fastestSolar.s.solar_input_w.toLocaleString()}W ceiling.</li>
+    <li><strong>High-voltage residential panels (100V–165V):</strong> Only {highVoltage.length} stations here ({highVoltage.map((r, i) => (<>{i > 0 ? ', ' : ''}<a href={`/power-stations/${r.s.slug}/`}>{fullName(r.s)}</a></>))}) can accept 3–4 standard residential panels wired in series.</li>
+    <li><strong>Tight ≤32V windows:</strong> Watch out on {tightVoltage.map((r, i) => (<>{i > 0 ? ', ' : ''}<a href={`/power-stations/${r.s.slug}/`}>{fullName(r.s)}</a> ({r.s.solar_voltage_range})</>))} — stick to single 12V-nominal panels (18–24V Voc) or wire in parallel, never series.</li>
+    <li><strong>Proprietary adapters:</strong> Jackery uses DC8020 barrel inputs (needs an inexpensive MC4-to-DC8020 adapter for third-party panels); DJI Power 1000 and Power 2000 require DJI's separate SDC MPPT / Super Fast Charger accessory to connect solar panels.</li>
+  </ul>
+
+  <h2>FAQ</h2>
+  {faq.map((f) => (
+    <details class="faq">
+      <summary>{f.q}</summary>
+      <div>{f.a}</div>
+    </details>
+  ))}
+
+  <p style="margin-top:1.4rem;">
+    More guides: <a href={GUIDE_URLS.fridge}>Refrigerator</a> · <a href={GUIDE_URLS.starlink}>Starlink</a> · <a href={GUIDE_URLS.cpap}>CPAP</a> · <a href="/calculator/#solar">Solar MPPT Voc Checker →</a>
+  </p>
+
+  <div class="disclosure">
+    MPPT voltage windows and connectors verified ({db.updated}) from manufacturer spec sheets and manuals. Always confirm your panel's Voc and temperature coefficient on its rear label before connecting.
+  </div>
+</Base>

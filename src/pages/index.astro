@@ -1,45 +1,120 @@
 ---
 import Base from '../layouts/Base.astro';
 import db from '../data/power_stations.json';
-import { fullName, dollarsPerWh, metaFromParts } from '../lib/utils.js';
+import pairsData from '../data/compare_pairs.json';
+import { fullName, dollarsPerWh, formatWeight, metaFromParts, GUIDE_URLS, brandSlug } from '../lib/utils.js';
 
 const stations = db.power_stations;
-const brands = new Set(stations.map((s) => s.brand)).size;
+const brands = [...new Set(stations.map((s) => s.brand))];
+const bySlug = Object.fromEntries(stations.map((s) => [s.slug, s]));
 const bestValue = [...stations].sort((a, b) => dollarsPerWh(a) - dollarsPerWh(b)).slice(0, 4);
-const newest = [...stations].sort((a, b) => b.release_year - a.release_year).slice(0, 4);
+const newest = [...stations].sort((a, b) => b.release_year - a.release_year || b.capacity_wh - a.capacity_wh).slice(0, 4);
+const featuredPairs = pairsData.pairs
+  .filter((p) => p.index === true)
+  .slice(0, 6)
+  .map((p) => ({ a: bySlug[p.a], b: bySlug[p.b], url: `/compare/${p.a}-vs-${p.b}/` }))
+  .filter((p) => p.a && p.b);
 
 const whMin = Math.min(...stations.map((s) => s.capacity_wh));
 const whMax = Math.max(...stations.map((s) => s.capacity_wh));
 
 const title = 'WattLibrary — Portable Power Station Specs & Runtimes';
 const description = metaFromParts([
-  `${stations.length} portable power stations from ${brands} brands, ${whMin}–${whMax.toLocaleString()}Wh:`,
-  'verified capacity, inverter output, chemistry, solar limits and appliance runtimes.',
+  `${stations.length} verified portable power stations from ${brands.length} brands (${whMin}–${whMax.toLocaleString()}Wh):`,
+  'runtime & solar MPPT calculator, head-to-head matchups, and appliance guides.',
 ]);
+
+const siteUrl = new URL('/', Astro.site).href;
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${siteUrl}#organization`,
+      name: 'WattLibrary',
+      url: siteUrl,
+      logo: new URL('/apple-touch-icon.png', Astro.site).href,
+      email: 'hello@wattlibrary.com',
+      description: 'Independent, ad-free portable power station specification database and runtime calculator.',
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${siteUrl}#website`,
+      name: 'WattLibrary',
+      url: siteUrl,
+      publisher: { '@id': `${siteUrl}#organization` },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: `${new URL('/power-stations/', Astro.site).href}?q={search_term_string}`,
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  ],
+};
 ---
-<Base {title} {description}>
+<Base {title} {description} {schema}>
   <section class="hero" slot="hero">
     <div class="wrap">
       <p class="eyebrow">The portable power station database</p>
       <h1>Power station specs, without the marketing gloss</h1>
       <p class="lead">
-        We keep a structured database of {stations.length} portable power stations from {brands} brands. Real capacity, inverter output,
-        battery chemistry, solar limits. The numbers come from spec sheets and manuals, get checked before they go live, and read
-        the same way for every brand, so you can compare like for like.
+        A structured database of {stations.length} verified portable power stations from {brands.length} brands. Real capacity, continuous
+        and surge output, battery chemistry, MPPT solar limits, and one open runtime formula across every page — so you can compare like for like.
       </p>
       <div class="btn-row">
         <a href="/power-stations/" class="btn">Browse all {stations.length} models</a>
-        <a href="/compare/" class="btn btn-ghost">Head-to-head comparisons</a>
+        <a href="/calculator/" class="btn btn-ghost">Runtime &amp; solar calculator</a>
+        <a href="/compare/" class="btn btn-ghost">Compare any two</a>
       </div>
-      <div class="kpis" style="max-width:560px;">
-        <div class="kpi"><b>{stations.length}</b> models tracked</div>
-        <div class="kpi"><b>{brands}</b> brands</div>
-        <div class="kpi"><b>26</b> specs per model</div>
+      <div class="kpis" style="max-width:640px;">
+        <div class="kpi"><b>{stations.length}</b> verified models</div>
+        <div class="kpi"><b>{brands.length}</b> major brands</div>
+        <div class="kpi"><b>6</b> appliance guides</div>
+        <div class="kpi"><b>2</b> live sizing tools</div>
       </div>
     </div>
   </section>
 
-  <h2 style="margin-top:.5rem;">Best value per watt-hour <span class="muted" style="font-weight:400; font-size:.85rem;">(launch price)</span></h2>
+  <h2 style="margin-top:.5rem;">Start with the question, not the model</h2>
+  <div class="grid">
+    <div class="card">
+      <a href="/calculator/">Runtime &amp; Solar MPPT Calculator</a>
+      <p class="sub">Pick your appliances or check your solar panel Voc across all {stations.length} stations</p>
+    </div>
+    <div class="card">
+      <a href={GUIDE_URLS.fridge}>Power station for a refrigerator</a>
+      <p class="sub">Compressor startup surge check + 24h duty-cycled runtimes for every model</p>
+    </div>
+    <div class="card">
+      <a href={GUIDE_URLS.cpap}>Power station for a CPAP</a>
+      <p class="sub">Nights of backup on 12V DC vs AC, humidifier off and on</p>
+    </div>
+    <div class="card">
+      <a href={GUIDE_URLS.starlink}>Power station for Starlink</a>
+      <p class="sub">Starlink Mini &amp; Standard Gen 3 runtimes, snow-melt draw, and solar sizing</p>
+    </div>
+    <div class="card">
+      <a href={GUIDE_URLS.ups}>Home office &amp; UPS backup</a>
+      <p class="sub">10ms vs 20ms vs 30ms switchover for desktops, routers, and monitors</p>
+    </div>
+    <div class="card">
+      <a href={GUIDE_URLS.solar}>Solar panel compatibility guide</a>
+      <p class="sub">MPPT voltage windows, cold-weather Voc rise, and recharge hours</p>
+    </div>
+  </div>
+
+  <h2>Popular head-to-head matchups</h2>
+  <div class="grid">
+    {featuredPairs.map((p) => (
+      <div class="card">
+        <a href={p.url}>{fullName(p.a)} vs {fullName(p.b)}</a>
+        <p class="sub">{p.a.capacity_wh.toLocaleString()}Wh vs {p.b.capacity_wh.toLocaleString()}Wh · Specs + runtimes</p>
+      </div>
+    ))}
+  </div>
+  <p><a href="/compare/">Compare any two models or browse all matchups →</a></p>
+
+  <h2>Best value per watt-hour <span class="muted" style="font-weight:400; font-size:.85rem;">(launch price)</span></h2>
   <div class="grid">
     {bestValue.map((s) => (
       <div class="card">
@@ -49,37 +124,33 @@ const description = metaFromParts([
     ))}
   </div>
 
-  <h2>Start with the question, not the model</h2>
-  <div class="grid">
-    <div class="card">
-      <a href="/guides/power-station-for-cpap/">How long will a power station run a CPAP?</a>
-      <p class="sub">Nights of backup for every model, humidifier on and off</p>
-    </div>
-    <div class="card">
-      <a href="/guides/power-station-for-refrigerator/">How long will a power station run a refrigerator?</a>
-      <p class="sub">Which units can start a compressor, and for how long they feed one</p>
-    </div>
-  </div>
-
-  <h2>Recently released</h2>
+  <h2>Newest models ({newest[0]?.release_year})</h2>
   <div class="grid">
     {newest.map((s) => (
       <div class="card">
         <a href={`/power-stations/${s.slug}/`}>{fullName(s)}</a>
-        <p class="sub">{s.release_year} · {s.capacity_wh.toLocaleString()}Wh · {s.ac_output_w.toLocaleString()}W</p>
+        <p class="sub">{s.release_year} · {s.capacity_wh.toLocaleString()}Wh · {s.ac_output_w.toLocaleString()}W · {formatWeight(s.weight_kg)}</p>
       </div>
     ))}
   </div>
 
+  <h2>Browse by brand</h2>
+  <div class="filters">
+    {brands.map((b) => (
+      <a class="btn btn-ghost btn-sm" href={`/brands/${brandSlug(b)}/`}>{b}</a>
+    ))}
+    <a class="btn btn-ghost btn-sm" href="/brands/">All brands compared →</a>
+  </div>
+
   <h2>Why another power station site?</h2>
-  <p style="max-width:660px;">
+  <p style="max-width:680px;">
     A product page will happily call a 268Wh box a "solar generator". It won't mention that the inverter eats roughly 15% of
-    every charge, or that an NMC pack rated for 500 cycles is basically a consumable next to a 3,000-cycle LiFePO4 one, or that
-    your panel needs to land inside a specific voltage window before the unit will accept a single watt from it.
+    every charge, or that an NMC pack rated for 500 cycles is basically a consumable next to a 4,000-cycle LiFePO4 one, or that
+    your panel's cold-weather open-circuit voltage (Voc) needs to land inside a specific MPPT window before the unit will accept
+    a single watt from it.
   </p>
-  <p style="max-width:660px;">
-    That gap is what this site exists for. We normalize the numbers brands report in incompatible ways, flag the ones they'd
-    rather you didn't compare, and show the working behind every runtime estimate. When we're not sure about a figure, it
-    stays out of the database until we are.
+  <p style="max-width:680px;">
+    That gap is what WattLibrary exists for. We normalize the numbers brands report in incompatible ways, verify every listing
+    against official documentation, and run the exact same transparent math behind every model card, guide, comparison, and calculator.
   </p>
 </Base>

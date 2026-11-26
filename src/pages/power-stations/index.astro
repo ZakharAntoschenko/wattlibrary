@@ -1,96 +1,269 @@
 ---
 import Base from '../../layouts/Base.astro';
 import db from '../../data/power_stations.json';
-import { fullName, dollarsPerWh, metaFromParts } from '../../lib/utils.js';
 import pairsData from '../../data/compare_pairs.json';
+import { fullName, dollarsPerWh, kgToLbs, metaFromParts, brandSlug } from '../../lib/utils.js';
 import { pairSlug } from '../../lib/compare.js';
 
 const stations = [...db.power_stations].sort((a, b) => a.capacity_wh - b.capacity_wh);
-
-// One head-to-head link per model, so every comparison page is reachable
-// from the catalogue as well as from /compare/.
 const bySlug = Object.fromEntries(db.power_stations.map((s) => [s.slug, s]));
-const firstPairFor = {};
-for (const p of pairsData.pairs) {
+
+// Link each model strictly to an INDEXABLE curated comparison pair when one
+// exists; otherwise link to the interactive custom comparator pre-loaded with
+// this model. This stops the catalogue from funneling link equity into noindex URLs.
+const firstIndexedPairFor = {};
+for (const p of pairsData.pairs.filter((x) => x.index === true)) {
   const a = bySlug[p.a];
   const b = bySlug[p.b];
   if (!a || !b) continue;
   const url = `/compare/${pairSlug(a, b)}/`;
-  firstPairFor[a.slug] ??= { url, other: b };
-  firstPairFor[b.slug] ??= { url, other: a };
+  firstIndexedPairFor[a.slug] ??= { url, label: `vs ${fullName(b)}` };
+  firstIndexedPairFor[b.slug] ??= { url, label: `vs ${fullName(a)}` };
 }
+
 const whMin = Math.min(...stations.map((s) => s.capacity_wh));
 const whMax = Math.max(...stations.map((s) => s.capacity_wh));
 const wMax = Math.max(...stations.map((s) => s.ac_output_w));
-const brandList = [...new Set(stations.map((s) => s.brand))];
+const brands = [...new Set(stations.map((s) => s.brand))].sort();
 
 const title = `Compare ${stations.length} Portable Power Stations: ${whMin}–${whMax.toLocaleString()}Wh`;
 const description = metaFromParts([
-  `All ${stations.length} models side by side: ${whMin}–${whMax.toLocaleString()}Wh, up to ${wMax.toLocaleString()}W AC, LiFePO4 vs NMC, solar input, weight and $/Wh.`,
-  `${brandList.slice(0, 4).join(', ')} and more.`,
+  `Filter & sort ${stations.length} verified models (${whMin}–${whMax.toLocaleString()}Wh, up to ${wMax.toLocaleString()}W AC):`,
+  'LiFePO4 cycles, UPS ms, solar MPPT, lbs/kg weight, and $/Wh.',
 ]);
----
-<Base {title} {description}>
-  <h1>Portable power station database</h1>
-  <p class="muted">{stations.length} models. Filter by what actually matters — capacity, chemistry, output — then open a model for runtime tables and solar compatibility.</p>
 
-  <div id="filters" class="filters">
-    <button data-f="all" class="active">All</button>
-    <button data-f="lfp">LiFePO4 only</button>
-    <button data-f="small">Under 500Wh</button>
-    <button data-f="mid">500–1,500Wh</button>
-    <button data-f="large">1,500Wh+</button>
-    <button data-f="ups">UPS mode</button>
-    <button data-f="v240">240V</button>
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'CollectionPage',
+      name: title,
+      description,
+      url: new URL(Astro.url.pathname, Astro.site).href,
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: 'Power stations' },
+      ],
+    },
+  ],
+};
+---
+<Base {title} {description} {schema}>
+  <nav class="crumbs"><a href="/">Home</a> › Power stations</nav>
+  <h1>Portable power station database</h1>
+  <p class="lead">
+    {stations.length} verified models from {brands.length} brands. Search, combine filters, and click any column header to sort — or
+    jump straight to the <a href="/calculator/">runtime &amp; solar calculator</a> to match your exact load.
+  </p>
+
+  <div class="tool-panel">
+    <div class="tool-row">
+      <div class="field" style="flex:2 1 220px;">
+        <label for="db-search">Search model or brand</label>
+        <input id="db-search" type="search" placeholder="e.g. DELTA 3, C1000, Bluetti, 2000..." autocomplete="off" />
+      </div>
+      <div class="field" style="flex:1 1 150px;">
+        <label for="db-brand">Brand</label>
+        <select id="db-brand">
+          <option value="all">All brands ({brands.length})</option>
+          {brands.map((b) => <option value={b}>{b}</option>)}
+        </select>
+      </div>
+      <div class="field" style="flex:1 1 165px;">
+        <label for="db-size">Capacity class</label>
+        <select id="db-size">
+          <option value="all">All sizes</option>
+          <option value="small">Under 500Wh</option>
+          <option value="mid">500–1,499Wh</option>
+          <option value="large">1,500–2,999Wh</option>
+          <option value="home">3,000Wh+ (Home)</option>
+        </select>
+      </div>
+      <div class="field" style="flex:0 1 130px;">
+        <label for="db-unit">Weight unit</label>
+        <select id="db-unit">
+          <option value="both">lbs &amp; kg</option>
+          <option value="lbs">lbs only</option>
+          <option value="kg">kg only</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filters" id="feature-toggles" style="margin-top:.85rem; margin-bottom:0;">
+      <button type="button" data-toggle="lfp">LiFePO4 only</button>
+      <button type="button" data-toggle="ups20">UPS ≤20ms</button>
+      <button type="button" data-toggle="ups10">UPS ≤10ms</button>
+      <button type="button" data-toggle="v240">240V output</button>
+      <button type="button" data-toggle="expand">Expandable</button>
+      <button type="button" id="db-reset" style="margin-left:auto; color:var(--accent-deep);">Reset all</button>
+    </div>
   </div>
 
-  <div class="tbl"><div class="tbl-scroll"><table id="db">
+  <p class="muted" id="db-count" style="font-size:.88rem; margin:.4rem 0 .2rem;">
+    Showing <b>{stations.length}</b> of {stations.length} models · Click column headers to sort.
+  </p>
+
+  <div class="tbl tbl-sticky"><div class="tbl-scroll"><table id="db">
     <thead>
-      <tr><th>Model</th><th>Capacity</th><th>AC output</th><th>Chemistry</th><th>Solar in</th><th>Weight</th><th>$/Wh*</th><th>Compare</th></tr>
+      <tr>
+        <th class="sortable" data-key="name" data-type="str">Model</th>
+        <th class="sortable" data-key="wh" data-type="num" data-dir="asc">Capacity</th>
+        <th class="sortable" data-key="ac" data-type="num">AC output</th>
+        <th class="sortable" data-key="cycles" data-type="num">Chemistry / Cycles</th>
+        <th class="sortable" data-key="solar" data-type="num">Solar in</th>
+        <th class="sortable" data-key="ups" data-type="num">UPS</th>
+        <th class="sortable" data-key="kg" data-type="num">Weight</th>
+        <th class="sortable" data-key="dpw" data-type="num">$/Wh*</th>
+        <th>Compare</th>
+      </tr>
     </thead>
     <tbody>
-      {stations.map((s) => (
-        <tr
-          data-chem={s.chemistry}
-          data-wh={s.capacity_wh}
-          data-ups={s.ups_switchover_ms ? '1' : '0'}
-          data-v240={s.output_240v ? '1' : '0'}
-        >
-          <td><a href={`/power-stations/${s.slug}/`}>{fullName(s)}</a></td>
-          <td>{s.capacity_wh.toLocaleString()} Wh</td>
-          <td>{s.ac_output_w.toLocaleString()} W</td>
-          <td>{s.chemistry}</td>
-          <td>{s.solar_input_w} W</td>
-          <td>{s.weight_kg} kg</td>
-          <td>${dollarsPerWh(s).toFixed(2)}</td>
-          <td>
-            {firstPairFor[s.slug]
-              ? <a href={firstPairFor[s.slug].url}>vs {fullName(firstPairFor[s.slug].other)}</a>
-              : <span class="muted">—</span>}
-          </td>
-        </tr>
-      ))}
+      {stations.map((s) => {
+        const lbs = kgToLbs(s.weight_kg);
+        const dpw = dollarsPerWh(s);
+        const pair = firstIndexedPairFor[s.slug];
+        return (
+          <tr
+            data-name={fullName(s).toLowerCase()}
+            data-brand={s.brand}
+            data-chem={s.chemistry}
+            data-wh={s.capacity_wh}
+            data-ac={s.ac_output_w}
+            data-cycles={s.cycles_to_80pct}
+            data-solar={s.solar_input_w}
+            data-ups={s.ups_switchover_ms ?? 9999}
+            data-v240={s.output_240v ? '1' : '0'}
+            data-expand={s.expandable_max_wh ? '1' : '0'}
+            data-kg={s.weight_kg}
+            data-lbs={lbs}
+            data-dpw={dpw.toFixed(4)}
+          >
+            <td><a href={`/power-stations/${s.slug}/`}>{fullName(s)}</a></td>
+            <td>{s.capacity_wh.toLocaleString()} Wh</td>
+            <td>{s.ac_output_w.toLocaleString()} W</td>
+            <td>{s.chemistry} · {s.cycles_to_80pct.toLocaleString()}</td>
+            <td>{s.solar_input_w.toLocaleString()} W</td>
+            <td>{s.ups_switchover_ms ? `${s.ups_switchover_ms} ms` : <span class="muted">—</span>}</td>
+            <td class="wt-cell">{lbs} lbs <span class="muted">({s.weight_kg} kg)</span></td>
+            <td>${dpw.toFixed(2)}</td>
+            <td>
+              {pair
+                ? <a href={pair.url}>{pair.label}</a>
+                : <a href={`/compare/?a=${s.slug}`}>Compare →</a>}
+            </td>
+          </tr>
+        );
+      })}
     </tbody>
   </table></div></div>
-  <p class="muted" style="font-size:0.83rem;">* Based on launch price (MSRP). Street prices are often significantly lower.</p>
+  <p class="muted" style="font-size:0.83rem;">
+    * Launch price (MSRP) per watt-hour. Street prices are frequently 20–40% lower during sales.
+    Browse by brand: {brands.map((b, i) => (
+      <>{i > 0 ? ' · ' : ''}<a href={`/brands/${brandSlug(b)}/`}>{b}</a></>
+    ))}.
+  </p>
 
   <script>
-    document.querySelectorAll('#filters button').forEach((btn) => {
+    const tbody = document.querySelector('#db tbody');
+    const allRows = Array.from(tbody.querySelectorAll('tr'));
+    const searchEl = document.getElementById('db-search');
+    const brandEl = document.getElementById('db-brand');
+    const sizeEl = document.getElementById('db-size');
+    const unitEl = document.getElementById('db-unit');
+    const countEl = document.getElementById('db-count');
+    const toggleBtns = Array.from(document.querySelectorAll('#feature-toggles button[data-toggle]'));
+    const activeToggles = new Set();
+
+    // Support ?q=... from SearchAction / external links
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('q')) searchEl.value = params.get('q');
+    if (params.get('brand')) brandEl.value = params.get('brand');
+
+    function applyFilters() {
+      const q = searchEl.value.trim().toLowerCase();
+      const brand = brandEl.value;
+      const size = sizeEl.value;
+      let shown = 0;
+
+      for (const tr of allRows) {
+        const wh = Number(tr.dataset.wh);
+        const ups = Number(tr.dataset.ups);
+        let ok = true;
+        if (q && !tr.dataset.name.includes(q)) ok = false;
+        if (brand !== 'all' && tr.dataset.brand !== brand) ok = false;
+        if (size === 'small' && !(wh < 500)) ok = false;
+        if (size === 'mid' && !(wh >= 500 && wh < 1500)) ok = false;
+        if (size === 'large' && !(wh >= 1500 && wh < 3000)) ok = false;
+        if (size === 'home' && !(wh >= 3000)) ok = false;
+        if (activeToggles.has('lfp') && tr.dataset.chem !== 'LFP') ok = false;
+        if (activeToggles.has('ups20') && !(ups <= 20)) ok = false;
+        if (activeToggles.has('ups10') && !(ups <= 10)) ok = false;
+        if (activeToggles.has('v240') && tr.dataset.v240 !== '1') ok = false;
+        if (activeToggles.has('expand') && tr.dataset.expand !== '1') ok = false;
+
+        tr.style.display = ok ? '' : 'none';
+        if (ok) shown++;
+      }
+      countEl.innerHTML = `Showing <b>${shown}</b> of ${allRows.length} models · Click column headers to sort.`;
+    }
+
+    function applyUnits() {
+      const u = unitEl.value;
+      for (const tr of allRows) {
+        const cell = tr.querySelector('.wt-cell');
+        const lbs = tr.dataset.lbs;
+        const kg = tr.dataset.kg;
+        if (u === 'lbs') cell.textContent = `${lbs} lbs`;
+        else if (u === 'kg') cell.textContent = `${kg} kg`;
+        else cell.innerHTML = `${lbs} lbs <span class="muted">(${kg} kg)</span>`;
+      }
+    }
+
+    toggleBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
-        const f = btn.dataset.f;
-        document.querySelectorAll('#filters button').forEach((b) => b.classList.toggle('active', b === btn));
-        document.querySelectorAll('#db tbody tr').forEach((tr) => {
-          const wh = Number(tr.dataset.wh);
-          let show = true;
-          if (f === 'lfp') show = tr.dataset.chem === 'LFP';
-          else if (f === 'small') show = wh < 500;
-          else if (f === 'mid') show = wh >= 500 && wh < 1500;
-          else if (f === 'large') show = wh >= 1500;
-          else if (f === 'ups') show = tr.dataset.ups === '1';
-          else if (f === 'v240') show = tr.dataset.v240 === '1';
-          tr.style.display = show ? '' : 'none';
-        });
+        const key = btn.dataset.toggle;
+        if (activeToggles.has(key)) activeToggles.delete(key);
+        else activeToggles.add(key);
+        btn.classList.toggle('active', activeToggles.has(key));
+        applyFilters();
       });
     });
+
+    searchEl.addEventListener('input', applyFilters);
+    brandEl.addEventListener('change', applyFilters);
+    sizeEl.addEventListener('change', applyFilters);
+    unitEl.addEventListener('change', applyUnits);
+
+    document.getElementById('db-reset').addEventListener('click', () => {
+      searchEl.value = '';
+      brandEl.value = 'all';
+      sizeEl.value = 'all';
+      activeToggles.clear();
+      toggleBtns.forEach((b) => b.classList.remove('active'));
+      applyFilters();
+    });
+
+    // Column sorting
+    document.querySelectorAll('#db thead th.sortable').forEach((th) => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.key;
+        const type = th.dataset.type;
+        const nextDir = th.dataset.dir === 'asc' ? 'desc' : 'asc';
+        document.querySelectorAll('#db thead th.sortable').forEach((h) => delete h.dataset.dir);
+        th.dataset.dir = nextDir;
+
+        const mul = nextDir === 'asc' ? 1 : -1;
+        allRows.sort((a, b) => {
+          if (type === 'num') return (Number(a.dataset[key]) - Number(b.dataset[key])) * mul;
+          return a.dataset[key].localeCompare(b.dataset[key]) * mul;
+        });
+        for (const tr of allRows) tbody.appendChild(tr);
+      });
+    });
+
+    applyFilters();
   </script>
 </Base>
